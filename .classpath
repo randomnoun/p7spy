@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="build/java16"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/runtime/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/compile/spring.jar"/>
+	<classpathentry kind="lib" path="lib/compile/java-getopt-1.0.12.jar"/>
+	<classpathentry kind="lib" path="lib/compile/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/compile/junit.jar"/>
+	<classpathentry kind="lib" path="lib/compile/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/compile/derby.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,29 @@
+p7spy requires a cygwin installation, and a Java 1.4 and 1.6 JDK. 
+It was developed using Eclipse 3.4.2, so if you wish to use the .project files to compile 
+this application, you should probably download these from:
+
+  Cygwin:  http://www.cygwin.com/
+  Eclipse: http://www.eclipse.org/
+    
+To compile, open this project in eclipse, right-click on the build.xml file, select 
+'Run As'->'Ant build', select the 'all' task and click OK.
+
+This will create a 'p7spy.jar' in the build/jar folder. 
+
+Run the net.sf.p7spy.test.P7SpyTest class to see it in action.
+
+This distribution includes artifacts from the following open source projects.
+
+@TODO list these, and their licenses.
+log4j (*)
+derby
+doccheck
+emma
+java-getopt
+junit
+spring
+mysql
+statcvs
+xalan
+
+(*: only the log4j package is required during runtime use of the p7spy driver).

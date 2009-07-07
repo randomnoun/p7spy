@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all">
+
+    <!--
+      Ant build settings
+      ==================
+       
+      If you are working on this in a team environment, you may wish
+      to create a file in the src/resources/properties folder with a filename
+      set to "computerName-userName.properties". Any properties 
+      specified in this file will be specific to your computer/user
+      combination, and will therefore not impact other developers.
+      
+      If you're the only person who will be looking at this,
+      then you can modify this file directly.
+      
+      Properties you may wish to modify:
+      
+        jdkDir:    location of a Java JDK
+                   required for JNI includes; 
+                   defaults to "C:/Java/jdk1.6.0_03"      
+        
+        cygwinDir: location of cygwin (for bash, zip etc)
+                   defaults to "C:/cygwin"
+                   
+        bin.cvs:   location of an Eclipse-compatible CVS executable 
+                   (NB: the one bundled with cygwin isn't)
+        		   defaults to "C:/Program Files/CVSNT/cvs.exe"
+        
+      Feel free to override any others.
+      
+   -->
+          
+	<!-- environment imports -->
+    <property environment="env"/>
+
+	<!-- per-user properties must be specified *before* other properties -->
+    <property file="src/resources/properties/${env.COMPUTERNAME}-${user.name}.properties" />
+
+    <!-- deployment imports (override in ../src/resources/properties folder) -->
+    <property name="windowsDir" value="C:/WINDOWS" />
+    <property name="cygwinInstallDir" value="C:/cygwin"/>
+	<property name="jdk16Dir" value="C:/Java/jdk1.6.0_13" />
+	<property name="jdk14Dir" value="C:/java/j2sdk1.4.2_19" />
+	
+	<property name="jdkDir" value="${jdk16Dir}" />
+	<property name="bin.cvs" value="C:/Program Files/CVSNT/cvs.exe" />
+	<property name="bin.pscp" value="C:/Program Files/PuTTY/pscp.exe" />
+	
+	<!-- this needs to be the gcc executable, not a symlink -->
+    <property name="bin.bash" value="${cygwinInstallDir}/bin/bash" />
+	<property name="bin.zip" value="${cygwinInstallDir}/bin/zip" />
+
+	<!-- sourceforge upload settings (override in ../src/resources/properties folder) --> 
+	<property name="sourceforge.password" value="xxxxxx" />
+	<property name="sourceforge.username" value="xxxxxx" />
+
+	
+	<!-- used in build database and release filenames -->
+	<!-- increment this number as soon as a release has been uploaded to sourceforge --> 
+	<property name="p7spyReleaseVersion" value="0.2" />
+	
+	<property name="currentDir" value="${user.dir}" />
+	<property name="increaseBuildNumber" value="false" />
+
+	<property name="dest" value="build/class" />
+	<property name="dest14" value="build/class14"/>
+	<property name="dest16" value="build/class16"/>
+	
+	<path id="classpath.build.target"   location="build/class" />
+	
+	<!-- all JARs in the lib/compile folder; these are needed for compilation and testing but are not 
+	     not needed when using the library 
+	  -->
+	<path id="classpath.compile.lib">
+	  <fileset dir="lib/compile" includes="*.jar" />
+	</path>
+	
+	<!-- all JARs in the lib/runtime folder; these are needed for execution when
+	     p7spy is deployed
+	  -->
+	<path id="classpath.runtime.lib">
+	  <fileset dir="lib/runtime" includes="*.jar" />
+	</path>
+	
+    <path id="classpath.emma">
+      <pathelement path="lib/compile/emma.jar" />
+      <pathelement path="lib/compile/emma_ant.jar" />
+    </path>
+	<path id="classpath.all.lib">
+      <path refid="classpath.compile.lib" />
+      <path refid="classpath.runtime.lib" />
+    </path>
+    <path id="classpath.run">
+      <path refid="classpath.runtime.lib" />
+      <path refid="classpath.build.target" />
+    </path>
+	<path id="classpath.test">
+	  <path refid="classpath.all.lib" />
+	  <pathelement path="${dest}" />
+	  <pathelement path="${dest14}" />
+	</path>
+	
+    
+    <path id="classpath.javac">
+      <fileset dir="${jdkDir}/jre/lib">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+
+
+    <!--
+      **********************************************************************
+      * taskdef section
+      *
+      -->
+
+	<taskdef resource="emma_ant.properties" classpathref="classpath.emma" />
+	
+    <!--
+      **********************************************************************
+      * target section
+      *
+      -->
+
+	<target name="all" description="Complete build"
+		depends="buildClassesNoDriver, p7spy14" >
+	</target>
+	
+	<target name="_init" description="Create directories required by other targets">
+	  <echo message="Reading build property file 'src/resources/properties/${env.COMPUTERNAME}-${user.name}.properties'" />
+	  <echo message="Creating build directory structure ..."/>
+	  <mkdir dir="build/class" />
+	  <mkdir dir="build/emma" />
+	  <mkdir dir="build/junit" />
+	  <mkdir dir="build/dist" />
+      <mkdir dir="build/dll" />
+	  <mkdir dir="build/exe" />
+	  <mkdir dir="build/h" />
+	  <mkdir dir="build/jar" />
+	  <mkdir dir="build/jni" />
+	  <mkdir dir="build/javadoc" />
+	</target>
+	
+	<condition property="testIncreaseBuildNumber">
+		<equals arg1="${increaseBuildNumber}" arg2="false" />
+	</condition>
+	<target name="_increaseBuildNumber" description="Increase build number; only run this on the main build machine" unless="testIncreaseBuildNumber">
+	  <echo message="Increasing build number"/>
+      <java classname="net.sf.p7spy.util.IncreaseBuildNumber" 
+         fork="true" 
+         dir="."
+         jvm="${jdkDir}/bin/java"
+         failonerror = "true"
+      >
+        <classpath>
+          <path refid="classpath.all.lib" />
+          <path location="build/class" />
+        </classpath> 
+        <arg value="--jdbcUrl" />
+        <arg value="${buildDatabase.jdbcUrl}" />
+        <arg value="--username" />
+        <arg value="${buildDatabase.username}" />
+        <arg value="--password" />
+        <arg value="${buildDatabase.password}" />
+        <arg value="--product" />
+        <arg value="p7spy" />
+        <arg value="--release" />
+        <arg value="${p7spyReleaseVersion}" />
+        <arg value="--baseDir" />
+        <arg value="." />
+        <arg value="--source" />
+        <arg value="src/java" />
+        <arg value="--source2" />
+        <arg value="src/c" />
+        <arg value="--file" />
+        <arg value="src/resources/p7spyBuild.properties" />
+      </java>
+	</target>
+    
+    <target name="buildClassesNoDriver" depends="_init" description="Compiles all java source into the build/class directory">
+      <javac 
+         destdir="build/class"
+ 	     compiler="classic"
+	     bootclasspathref="classpath.javac"
+	     debug="on"
+      >
+        <classpath refid="classpath.all.lib" />
+        <src path="src/java" />
+        <include name="net/sf/p7spy/**"/>
+      	<exclude name="net/sf/p7spy/P7SpyDriver.java" />
+      </javac>
+    	
+      <!-- can comment this out if not running within eclipse -->
+	  <!-- <eclipse.refreshLocal resource="p7spy" /> -->
+
+    </target>
+    
+	<!--
+    <target name="buildP7spyJar" depends="_init, buildClasses" description="Create the p7spy.jar" >
+      < ! - - if we start i18n'ing things later 
+      <echo message="Copying src/*.txt" />
+	  <copy todir="build/class">
+	      <fileset dir="src/java" includes="**/*.txt" />
+	  </copy>
+	  - - > 
+      <echo message="Generating .jar file" />
+      <antcall target="_increaseBuildNumber" />
+	  <jar jarfile="build/jar/p7spy.jar" basedir="build/class" />
+    </target>
+    -->
+
+    <target name="clean" description="Clean out the ./build directories">
+        <delete dir="build/class" />
+    	<delete dir="build/jar" />
+    	<delete dir="build/javadoc" />
+    </target>
+
+    <target name="p7spy14">
+        <mkdir dir="build/jar" />
+        <mkdir dir="build/java" />
+        <mkdir dir="${dest14}/net/sf/p7spy"/>
+
+        <echo message="Generating 1.4 ClassGenerator"/>
+        <javac
+            fork="true" 
+            source="1.4" target="1.4"
+            executable="${jdk14Dir}/bin/javac.exe"
+            srcdir="src/java"
+            destdir="${dest14}"
+        >
+            <!-- <include name="net/sf/p7spy/*.java" /> -->
+        	<!-- @TODO this could be simplified a bit -->
+            <include name="net/sf/p7spy/**/*.java" />
+        	
+            <classpath>
+              <fileset dir="lib/runtime"><include name="**/*.jar"/></fileset>
+              <fileset dir="lib/compile"><include name="**/*.jar"/></fileset>
+            </classpath>
+        </javac>
+        
+        <echo message="Generating 1.4 stubs"/>
+        <java fork="true" 
+            jvm="${jdk14Dir}/bin/java.exe"
+            classname="net.sf.p7spy.generator.ClassStubGenerator"
+        >
+            <jvmarg value="-Xbootclasspath:${jdk14Dir}/lib/tools.jar;${jdk14Dir}/jre/lib/rt.jar"/>
+            <arg value="-p"/>
+            <arg value="net.sf.p7spy.impl14"/>
+            <arg value="build/java14/"/>
+            <classpath>
+              <fileset dir="lib/runtime">
+                  <include name="**/*.jar"/>
+              </fileset>
+              <pathelement location="${dest14}" />
+            </classpath>
+        </java>
+        
+        <echo message="Compiling 1.4 stubs" />
+        <javac
+            fork="true" 
+            source="1.4" target="1.4"
+            executable="${jdk14Dir}/bin/javac.exe"
+            
+            srcdir="build/java14"
+            destdir="${dest14}"
+        >
+            <include name="net/sf/p7spy/impl14/*.java" />
+        	<classpath>
+	            <fileset dir="lib/runtime">
+	                <include name="**/*.jar"/>
+	            </fileset>
+            </classpath>
+        </javac>
+
+    	<!--
+        <echo message="Building p7spy JAR"/>
+        <delete dir="build/tmp/jar" />
+        <mkdir dir="build/tmp/jar" />
+          <jar destfile="build/jar/p7spy.jar" >
+            <fileset dir="${dest14}" >
+                <include name="net/sf/p7spy/**.class"/>
+              </fileset>
+              <manifest>
+                  <attribute name="Main-Class" value="net.sf.p7spy.P7SpyUtil"/>
+              </manifest>
+        </jar>
+        -->
+    </target>
+
+	
+    <target name="p7spy16">
+        <mkdir dir="build/jar" />
+        <mkdir dir="build/java" />
+        <mkdir dir="${dest16}/net/sf/p7spy"/>
+
+        <echo message="Generating 1.6 ClassGenerator"/>
+        <javac
+            fork="true" 
+            source="1.6" target="1.6"
+            executable="${jdk16Dir}/bin/javac.exe"
+            srcdir="src/java"
+            destdir="${dest16}"
+        >
+            <!-- <include name="net/sf/p7spy/*.java" /> -->
+            <include name="net/sf/p7spy/generator/ClassStubGenerator.java" />
+            <classpath>
+              <fileset dir="lib/runtime">
+                  <include name="**/*.jar"/>
+              </fileset>
+            </classpath>
+        </javac>
+        
+        <echo message="Generating 1.6 stubs"/>
+        <java fork="true" 
+            jvm="${jdk16Dir}/bin/java.exe"
+            classname="net.sf.p7spy.generator.ClassStubGenerator"
+        >
+            <jvmarg value="-Xbootclasspath:${jdk16Dir}/lib/tools.jar;${jdk16Dir}/jre/lib/rt.jar"/>
+            <arg value="-p"/>
+            <arg value="net.sf.p7spy.impl16"/>
+            <arg value="build/java16/"/>
+            <classpath>
+              <fileset dir="lib/runtime">
+                  <include name="**/*.jar"/>
+              </fileset>
+              <pathelement location="${dest14}" />
+            </classpath>
+        </java>
+        
+        <echo message="Compiling 1.6 stubs" />
+        <javac
+            fork="true" 
+            source="1.6" target="1.6"
+            executable="${jdk14Dir}/bin/javac.exe"
+            
+            srcdir="build/java16"
+            destdir="${dest16}"
+        >
+            <include name="net/sf/p7spy/**.java" />
+        	<classpath>
+	            <fileset dir="lib/runtime">
+	                <include name="**/*.jar"/>
+	            </fileset>
+            </classpath>
+        </javac>
+
+    	<!--
+        <echo message="Building p7spy JAR"/>
+        <delete dir="build/tmp/jar" />
+        <mkdir dir="build/tmp/jar" />
+          <jar destfile="build/jar/p7spy.jar" >
+            <fileset dir="${dest14}" >
+                <include name="net/sf/p7spy/**.class"/>
+              </fileset>
+              <manifest>
+                  <attribute name="Main-Class" value="net.sf.p7spy.P7SpyUtil"/>
+              </manifest>
+        </jar>
+        -->
+    </target>
+
+	
+    <!-- additionalparam="-J-Xss20M -J-Xmx128M" -->
+	<target name="javadoc" depends="_init" description="Runs the standard java doclet over the Java source code">
+		<!-- stylesheetfile="src/resources/doclet\doc-files\stylesheet.css" -->
+		<javadoc access="public"
+            destdir="build/javadoc"
+            additionalparam="-breakiterator "
+            sourcepath="src/java"
+			stylesheetfile="doc/javadoc-stylesheet.css" 
+          >
+		  
+          <classpath refid="classpath.all.lib" />
+          <packageset dir="src/java" >
+             <include name="net/sf/p7spy/**/*" />
+          </packageset>
+        </javadoc>
+    </target>
+	
+	<target name="statcvs" depends="_init" description="Generate statistics this project.">
+	    <echo message="Generating CVS log" />
+		<echo>
+Warning: the first time you run this, this task may appear to
+hang. If you check the 'build/statcvs/cvs.log' file and it requests
+confirmation of the server's SSL key, then run the following lines
+from a command line:
+
+	C:\Documents and Settings\knoxg\My Documents\workspace\p7spy>"c:\program files\cvsnt\cvs" login
+	Logging in to :extssh:yourusername@p7spy.cvs.sourceforge.net:22:/cvsroot/p7spy
+	CVS Password: xxxxxx
+	The server's host key is not cached in the registry. You
+	have no guarantee that the server is the computer you
+	think it is.
+	The server's key fingerprint is:
+	1024 21:20:02:30:ef:5f:cc:6d:38:1a:36:4b:fc:5f:33:57
+	If you trust this host, hit Yes to add the key to
+	PuTTY's cache and carry on connecting.
+	If you want to carry on connecting just once, without
+	adding the key to the cache, hit No.
+	If you do not trust this host, hit Cancel to abandon the
+	connection.			
+
+and then hit "Y"
+			
+(ignore this message if you have already performed the steps above)			
+		</echo>
+
+		<mkdir dir="build/statcvs" />
+		<exec dir="." 
+			executable="${bin.cvs}" 
+			output="build/statcvs/cvs.log"
+		>
+			<arg value="log" />
+			<redirector error="build/statcvs/cvs-error.log" />
+		</exec>
+		<echo message="Generating CVS statistics" />
+        <java classname="net.sf.statcvs.Main" 
+			fork="true" 
+	        dir="build/statcvs"
+	        jvm="${jdkDir}/bin/java"
+	        failonerror = "true"
+	     >
+	        <classpath>
+	          <path refid="classpath.all.lib" />
+	        </classpath> 
+	        <arg value="./cvs.log" />
+	        <arg value="../.." />
+		</java>
+	    <echo message="Refreshing project" />
+	    <!-- doesn't work in Eclipse Europa (v3.3.0)
+	    <eclipse.refreshLocal resource="p7spy" />
+	    -->
+	</target>
+	
+	<target name="distribution" depends="all" description="Creates a p7spy distribution for uploading to sourceforge">
+		<mkdir dir="build/dist" />
+		<delete file="build/dist/p7spy-${p7spyReleaseVersion}-bin.zip"/>
+		<delete file="build/dist/p7spy-${p7spyReleaseVersion}-src.zip"/>
+		<!-- binary-only archive (inclueds runtime JARs) -->
+		<exec executable="${bin.zip}" dir="build/dist" >
+		    <arg value="-rj" />
+		    <arg value="p7spy-${p7spyReleaseVersion}-bin.zip" />
+		    <arg value="../../doc/README.txt" />
+		    <arg value="../../doc/lgpl-3.0.txt" />
+		    <arg value="../../build/jar/p7spy.jar" />
+		</exec>
+		<exec executable="${bin.zip}" dir="build" >
+		    <arg value="-r" />
+		    <arg value="dist/p7spy-${p7spyReleaseVersion}-bin.zip" />
+			<arg value="javadoc" />
+		</exec>
+		<exec executable="${bin.zip}" dir="." >
+		    <arg value="-r" />
+		    <arg value="dist/p7spy-${p7spyReleaseVersion}-bin.zip" />
+			<arg value="lib/runtime" />
+		</exec>
+		
+		<!-- binary + source archive -->
+		<copy 
+			file="build/dist/p7spy-${p7spyReleaseVersion}-bin.zip"
+		    tofile="build/dist/p7spy-${p7spyReleaseVersion}-src.zip" 
+		/>
+		<exec executable="${bin.zip}" dir="." >
+		    <arg value="-r" />
+		    <arg value="build/dist/p7spy-${p7spyReleaseVersion}-src.zip" />
+			<arg value="build.xml" />
+			<arg value="src" />
+		    <arg value="lib" />
+		    <arg value="-x" />
+		    <arg value="\*CVS\*" />
+		    <arg value="-x" />
+		    <arg value="\*p7spyBuild.properties" />
+		</exec>
+	</target>
+
+	<target name="junit" depends="p7spy14" description="Run junit tests and generate XML and HTML reports">
+		<junit fork="yes" jvm="${jdk14Dir}/bin/java.exe" 
+			printsummary="no" haltonfailure="no" dir="${basedir}/build/jni">
+	    <batchtest fork="yes" todir="build/junit" >
+	      <fileset dir="${dest14}">
+	        <!-- <include name="**/*Test.class" /> -->
+	      	<include name="**/P7SpyTest.class" />
+	      </fileset>
+	    </batchtest>
+	    <formatter type="xml" />
+        <classpath>
+          <pathelement location="${dest14}" />
+          <path refid="classpath.test" />
+        </classpath>
+	  </junit>
+
+	  <junitreport todir="build/junit">
+	    <fileset dir="build/junit">
+	      <include name="TEST-*.xml" />
+	    </fileset>
+	    <report todir="build/junit" />
+	  </junitreport>
+	</target>
+	
+	<target name="emma" depends="p7spy14">
+
+	  <!-- create instrumented p7spy classes -->
+	  <emma enabled="true" >
+        <instr instrpathref="classpath.run"
+             destdir="${basedir}/build/emma/class"	
+             metadatafile="${basedir}/build/emma/report/metadata.emma"
+             merge="true"
+        >
+          <filter includes="net.sf.p7spy.*" />
+          <filter excludes="net.sf.p7spy.util.IncreaseBuildNumber" />
+        </instr>
+      </emma>
+     
+      <!-- create instrumented p7spy classes -->
+      <copy file="build/jar/p7spy.jar" tofile="build/jar/p7spy-emma.jar" />
+	  <emma enabled="true" >
+        <instr instrpath="build/jar/p7spy-emma.jar"
+             mode="overwrite"
+             merge="false"
+        >
+          <filter includes="net.sf.p7spy.*" />
+        </instr>
+      </emma>
+      <java classname="net.sf.p7spy.test.P7SpyTest" fork="true"
+      	dir="build/jni"
+        output="${basedir}/build/junit/reports-emma.txt"
+      >
+        <classpath>
+          <pathelement location="build/emma/class" />
+          <path refid="classpath.run" />
+          <path refid="classpath.emma" />
+        </classpath>
+		<jvmarg value="-Djava.library.path=${basedir}\build\jni" />
+        <jvmarg value="-Demma.coverage.out.file=${basedir}/build/emma/report/coverage.emma" />
+        <jvmarg value="-Demma.coverage.out.merge=false" />
+      </java>
+      <emma enabled="true" >
+        <report>
+          <fileset dir="build/emma/report" >
+            <include name="*.emma" />
+          </fileset>
+          <sourcepath path="src\java" />
+          <txt outfile="build/emma/report/coverage.txt" />
+          <html outfile="build/emma/report/coverage.html" />
+        </report>
+      </emma>
+	</target>
+	
+    <target name="doccheck" 
+      description="Runs the doccheck javadoc tool over the p7spy source, generating an HTML report"
+    >
+	  <mkdir dir="${basedir}/build/doccheck" />
+      <javadoc
+         destdir="."
+         author="true"
+         version="true"
+      >
+
+        <packageset dir="src/java" defaultexcludes="yes">
+          <include name="net/sf/p7spy/**"/>
+          <!-- <exclude name="net/sf/p7spy/doc-files/**"/> -->
+        </packageset>
+		<doclet name="com.sun.tools.doclets.doccheck.DocCheck" path="lib/compile/doccheck.jar">
+          <param name="-d" value="${basedir}/build/doccheck"/>
+	    </doclet>
+	    <classpath refid="classpath.all.lib"/>
+	    <classpath path="build/class" />
+	    <!-- <classpath path="${jdkDir}/jre/lib/xml.jar" /> -->
+      </javadoc>
+    </target>
+
+    <target name="uploadDocumentsToSourceforge" 
+      description="Updates the sourceforge site with the latest javadoc, doccheck, emma, statcvs output" >
+    	<echo message="Copying javadocs..."/>
+		<exec executable="${bin.pscp}" dir="." >
+			<arg value="-pw" />
+			<arg value="${sourceforge.password}" />
+		    <arg value="-r" />
+			<arg value="build/javadoc/*" />
+			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/javadoc" />
+		</exec>
+
+    	<echo message="Copying doccheck..."/>
+		<exec executable="${bin.pscp}" dir="." >
+			<arg value="-pw" />
+			<arg value="${sourceforge.password}" />
+		    <arg value="-r" />
+			<arg value="build/doccheck/*" />
+			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/doccheck" />
+		</exec>
+
+    	<echo message="Copying emma..."/>
+		<exec executable="${bin.pscp}" dir="." >
+			<arg value="-pw" />
+			<arg value="${sourceforge.password}" />
+		    <arg value="-r" />
+			<arg value="build/emma/report/*" />
+			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/emma" />
+		</exec>
+
+    	<echo message="Copying statcvs..."/>
+		<exec executable="${bin.pscp}" dir="." >
+			<arg value="-pw" />
+			<arg value="${sourceforge.password}" />
+		    <arg value="-r" />
+			<arg value="build/statcvs/*" />
+			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/statcvs" />
+		</exec>
+    </target>
+	
+</project>
