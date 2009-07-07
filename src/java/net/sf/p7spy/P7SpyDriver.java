@@ -1,5 +1,6 @@
 package net.sf.p7spy;
 
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -74,9 +75,6 @@ public class P7SpyDriver implements Driver {
 
 	/** Major version number reported by {@link #getMajorVersion()} */
 	public static final int MAJOR_VERSION = 1;
-	
-	/** Minor version number reported by {@link #getMinorVersion()} */
-	public static final int MINOR_VERSION = 0;
 	
 	public boolean acceptsURL(String url) throws SQLException {
 		return url.startsWith("jdbc:p7spy:") || url.startsWith("jdbc:p7spy#");
@@ -155,9 +153,22 @@ public class P7SpyDriver implements Driver {
 		return MAJOR_VERSION;
 	}
 
-	/** Minor version required by JDBC contract */
+	/** Minor version required by JDBC contract. This is the buildNumber of the p7spy JAR, 
+	 * or 0 if not an 'official' build.
+	 */
 	public int getMinorVersion() {
-		return MINOR_VERSION;
+		int buildNumber;
+		try {
+			InputStream is = P7SpyDriver.class.getClassLoader().getResourceAsStream("p7spyBuild.properties");
+			Properties props = new Properties();
+			props.load(is);
+			String buildNumberString = props.getProperty("build.buildNumber");
+			buildNumber = Integer.parseInt(buildNumberString);
+		} catch (Exception e) {
+			buildNumber = 0;
+			throw new RuntimeException(e);
+		}
+		return buildNumber;
 	}
 
 	/** Returns the DriverPropertyInfo of the wrapped connection */
