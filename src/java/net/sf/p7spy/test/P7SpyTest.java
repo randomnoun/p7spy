@@ -11,6 +11,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import net.sf.p7spy.P7SpyDriver;
+
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -23,13 +25,16 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Unit test for simple App. Should test in 1.4, 1.5 and 1.6 VMs.
+ * Unit test for p7spy. Should test in 1.4, 1.5 and 1.6 VMs.
  * 
  * @TODO increase coverage to include all SQL datatypes / JDBC methods
  */
 public class P7SpyTest 
     extends TestCase
 {
+
+	/** Logger instance for this class */
+	public static Logger logger = Logger.getLogger(P7SpyTest.class);
 	
 	/** log4j Appender used to test generated log4j text */
 	public static class MemoryAppender extends AppenderSkeleton {
@@ -156,7 +161,15 @@ public class P7SpyTest
         assertTrue(events.size() > 0);
     }
 
-    
+
+    // this test never fails; it is just used to display the driver build number
+    public void testDriverVersion() throws ClassNotFoundException, SQLException {
+    	P7SpyDriver driver = new P7SpyDriver();
+    	logger.info("P7Spy driver major version: " + driver.getMajorVersion());
+    	logger.info("P7Spy driver minor version: " + driver.getMinorVersion());
+    	
+    }
+
 }
 
 
