@@ -30,7 +30,8 @@ import gnu.getopt.Getopt;
 
 /**
  * Increases the build number (stored in a software registration
- * database), and writes it to a file.
+ * database), and writes it to a file. Also records things that are similar to a CVS revision tag, 
+ * except I don't trust CVS revision tags.
  * 
  * <p>I will document this at a later point.
  * 
@@ -41,7 +42,7 @@ public class IncreaseBuildNumber {
 	/** A revision marker to be used in exception stack traces. */
 	public static final String _revision = "$Id$";
 
-	/** If set to true, increases verbosity of this program */
+	/** If set to true, increases level of debug output of this program */
 	public boolean verbose;
 
 	/** The JDBC connection string to the database containing the build data */
@@ -134,8 +135,8 @@ public class IncreaseBuildNumber {
 		 * <p>See http://developer.apple.com/opensource/cvs/cederquist/cvs_19.html 
 		 * for more details
 		 * 
-		 * @param directory
-		 * @param line
+		 * @param directory the current directory, relative to the source base
+		 * @param line line of CVS output
 		 */
 		public CvsRecord(String directory, String line) {
 			Matcher matcher = cvsPattern.matcher(line);
@@ -175,7 +176,7 @@ public class IncreaseBuildNumber {
 		}
 		
 		/** Sees whether a date is within 2 seconds of another date; this is required
-		 * since the FAT filesystem doesn't record a huge amount of precision in it's
+		 * since the FAT filesystem doesn't record enough precision in it's
 		 * timestamps, so things could appear out of sync when they're not.
 		 * 
 		 * @param date1 date to compare
@@ -191,7 +192,7 @@ public class IncreaseBuildNumber {
 	 * @param jdbcUrl The JDBC connection string to the database containing the build data
 	 * @param username Username to connect with
 	 * @param password Password to connect with
-	 * @param verbose If true, increases program verbosity
+	 * @param verbose If true, increases level of debug output
 	 * @param product Product name
 	 * @param release Release identifier; should be in the format &lt;majorNumber&gt;.&lt;minorNumber&gt;
 	 * @param baseDir Base directory that the source parameters are relative to
@@ -223,14 +224,14 @@ public class IncreaseBuildNumber {
 	    System.out.println("");
 	    System.out.println("where [options] are:");
 	    System.out.println("-h --help           display this usage text");
-	    System.out.println("-j --jdbcUrl=xxx    JDBC to database containing build data");
-	    System.out.println("-u --username=xxx   username to connect with");
-	    System.out.println("-p --password=xxx   password to connect with");
+	    System.out.println("-j --jdbcUrl=xxx    * JDBC to database containing build data");
+	    System.out.println("-u --username=xxx   * username to connect with");
+	    System.out.println("-p --password=xxx   * password to connect with");
 		System.out.println("-v --verbose        increase verbosity");
-	    System.out.println("-d --product=xxx    product name");
-		System.out.println("-r --release=xxx    release ID. Should be in the form <majorNumber>.<minorNumber>\n" +
+	    System.out.println("-d --product=xxx    * product name");
+		System.out.println("-r --release=xxx    * release ID. Should be in the form <majorNumber>.<minorNumber>\n" +
 		                   "                    [.<minorSubReleaseNumber>]");
-		System.out.println("-b --baseDir=xxx    the base directory for the source directories below");		                   
+		System.out.println("-b --baseDir=xxx    * the base directory for the source directories below");		                   
 		System.out.println("-s --source=xxx     if set, the root of the source for this build \n" +
 		                   "                    (used to record CVS version data)");
 		System.out.println("-2 --source2=xxx    allows a second source path to be specified");
@@ -238,7 +239,7 @@ public class IncreaseBuildNumber {
 		System.out.println("-f --file=xxx       file to write build data to. If null, writes to stdout");
 	    
 	    System.out.println();
-	    System.out.println("All arguments are mandatory, apart from -f, -s and -2.");
+	    System.out.println("All arguments marked with an asterisk are mandatory.");
 	    System.out.println();
 	    System.out.println("For more information, run 'javadoc " + IncreaseBuildNumber.class.getName() + "'");
 	}
@@ -544,8 +545,9 @@ public class IncreaseBuildNumber {
 		out.println("build.product=" + product);
 		out.println("build.majorRelease=" + majorRelease);
 		out.println("build.minorRelease=" + minorRelease);
-		out.println("build.minorSubrelease=" + minorSubrelease);
+		out.println("build.minorSubrelease=" + (minorSubrelease==null ? "" : String.valueOf(minorSubrelease)));
 		out.println("build.buildNumber=" + thisBuild);
+		out.println("build.buildTimestamp=" + sdf2.format(now));
 		out.println("build.combinedTag=" + combinedTag);
 		out.close();
 		if (file!=null) {
