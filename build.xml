@@ -15,10 +15,12 @@
       then you can modify this file directly.
       
       Properties you may wish to modify:
-      
-        jdkDir:    location of a Java JDK
-                   required for JNI includes; 
-                   defaults to "C:/Java/jdk1.6.0_03"      
+
+        jdkDir:    location of a Java 1.4 JDK
+                   defaults to "C:/Java/jdk1.4.2_19"      
+
+        jdkDir:    location of a Java 1.6 JDK
+                   defaults to "C:/Java/jdk1.6.0_13"      
         
         cygwinDir: location of cygwin (for bash, zip etc)
                    defaults to "C:/cygwin"
@@ -38,7 +40,6 @@
     <property file="src/resources/properties/${env.COMPUTERNAME}-${user.name}.properties" />
 
     <!-- deployment imports (override in ../src/resources/properties folder) -->
-    <property name="windowsDir" value="C:/WINDOWS" />
     <property name="cygwinInstallDir" value="C:/cygwin"/>
 	<property name="jdk16Dir" value="C:/Java/jdk1.6.0_13" />
 	<property name="jdk14Dir" value="C:/java/j2sdk1.4.2_19" />
@@ -46,9 +47,8 @@
 	<property name="jdkDir" value="${jdk16Dir}" />
 	<property name="bin.cvs" value="C:/Program Files/CVSNT/cvs.exe" />
 	<property name="bin.pscp" value="C:/Program Files/PuTTY/pscp.exe" />
-	
-	<!-- this needs to be the gcc executable, not a symlink -->
-    <property name="bin.bash" value="${cygwinInstallDir}/bin/bash" />
+
+	<property name="bin.bash" value="${cygwinInstallDir}/bin/bash" />
 	<property name="bin.zip" value="${cygwinInstallDir}/bin/zip" />
 
 	<!-- sourceforge upload settings (override in ../src/resources/properties folder) --> 
@@ -57,7 +57,7 @@
 
 	
 	<!-- used in build database and release filenames -->
-	<!-- increment this number as soon as a release has been uploaded to sourceforge --> 
+	<!-- increment this number as soon as a release has been uploaded to sourceforge to prevent conflicts --> 
 	<property name="p7spyReleaseVersion" value="0.3" />
 	
 	<property name="currentDir" value="${user.dir}" />
@@ -95,12 +95,6 @@
       <path refid="classpath.runtime.lib" />
       <path refid="classpath.build.target" />
     </path>
-	<path id="classpath.test">
-	  <path refid="classpath.all.lib" />
-	  
-		<!-- <pathelement path="${dest}" />
-	  <pathelement path="${dest14}" /> -->
-	</path>
 	
     
     <path id="classpath.javac">
@@ -196,20 +190,6 @@
 
     </target>
     
-	<!--
-    <target name="buildP7spyJar" depends="_init, buildClasses" description="Create the p7spy.jar" >
-      < ! - - if we start i18n'ing things later 
-      <echo message="Copying src/*.txt" />
-	  <copy todir="build/class">
-	      <fileset dir="src/java" includes="**/*.txt" />
-	  </copy>
-	  - - > 
-      <echo message="Generating .jar file" />
-      <antcall target="_increaseBuildNumber" />
-	  <jar jarfile="build/jar/p7spy.jar" basedir="build/class" />
-    </target>
-    -->
-
     <target name="clean" description="Clean out the ./build directories">
         <delete dir="build/class" />
     	<delete dir="build/class14" />
@@ -236,10 +216,8 @@
             srcdir="src/java"
             destdir="${dest14}"
         >
-            <!-- <include name="net/sf/p7spy/*.java" /> -->
         	<!-- @TODO this could be simplified a bit -->
             <include name="net/sf/p7spy/**/*.java" />
-        	
             <classpath>
               <fileset dir="lib/runtime"><include name="**/*.jar"/></fileset>
               <fileset dir="lib/compile"><include name="**/*.jar"/></fileset>
@@ -295,7 +273,6 @@
             srcdir="src/java"
             destdir="${dest16}"
         >
-            <!-- <include name="net/sf/p7spy/*.java" /> -->
             <include name="net/sf/p7spy/generator/ClassStubGenerator.java" />
             <classpath>
               <fileset dir="lib/runtime">
@@ -383,7 +360,7 @@
         </javadoc>
     </target>
 	
-	<target name="statcvs" depends="_init" description="Generate statistics this project.">
+	<target name="statcvs" depends="_init" description="Generate CVS statistics for this project.">
 	    <echo message="Generating CVS log" />
 		<echo>
 Warning: the first time you run this, this task may appear to
@@ -442,7 +419,7 @@ and then hit "Y"
 		<mkdir dir="build/dist" />
 		<delete file="build/dist/p7spy-${p7spyReleaseVersion}-bin.zip"/>
 		<delete file="build/dist/p7spy-${p7spyReleaseVersion}-src.zip"/>
-		<!-- binary-only archive (inclueds runtime JARs) -->
+		<!-- binary-only archive (includes runtime JARs) -->
 		<exec executable="${bin.zip}" dir="build/dist" >
 		    <arg value="-rj" />
 		    <arg value="p7spy-${p7spyReleaseVersion}-bin.zip" />
@@ -495,7 +472,7 @@ and then hit "Y"
         <classpath>
           <pathelement location="build/class14" />  <!-- includes test class. -->
           <pathelement location="build/jar/p7spy.jar" />
-          <path refid="classpath.test" />
+      	  <path refid="classpath.all.lib" />
         </classpath>
 	  </junit>
 
@@ -509,7 +486,7 @@ and then hit "Y"
         <classpath>
         	<pathelement location="build/class14" />  <!-- includes test class. should probably use yet another classpath for this -->
           <pathelement location="build/jar/p7spy.jar" />
-          <path refid="classpath.test" />
+      	  <path refid="classpath.all.lib" />
         </classpath>
 	  </junit>
 		
