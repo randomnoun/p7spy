@@ -58,7 +58,7 @@
 	
 	<!-- used in build database and release filenames -->
 	<!-- increment this number as soon as a release has been uploaded to sourceforge --> 
-	<property name="p7spyReleaseVersion" value="0.2" />
+	<property name="p7spyReleaseVersion" value="0.3" />
 	
 	<property name="currentDir" value="${user.dir}" />
 	<property name="increaseBuildNumber" value="false" />
@@ -97,8 +97,9 @@
     </path>
 	<path id="classpath.test">
 	  <path refid="classpath.all.lib" />
-	  <pathelement path="${dest}" />
-	  <pathelement path="${dest14}" />
+	  
+		<!-- <pathelement path="${dest}" />
+	  <pathelement path="${dest14}" /> -->
 	</path>
 	
     
@@ -124,22 +125,22 @@
       -->
 
 	<target name="all" description="Complete build"
-		depends="buildClassesNoDriver, p7spy14" >
+		depends="buildClasses, p7spy14" >
 	</target>
 	
 	<target name="_init" description="Create directories required by other targets">
 	  <echo message="Reading build property file 'src/resources/properties/${env.COMPUTERNAME}-${user.name}.properties'" />
 	  <echo message="Creating build directory structure ..."/>
-	  <mkdir dir="build/class" />
-	  <mkdir dir="build/emma" />
-	  <mkdir dir="build/junit" />
-	  <mkdir dir="build/dist" />
-      <mkdir dir="build/dll" />
-	  <mkdir dir="build/exe" />
-	  <mkdir dir="build/h" />
-	  <mkdir dir="build/jar" />
-	  <mkdir dir="build/jni" />
-	  <mkdir dir="build/javadoc" />
+        <mkdir dir="build/class" />
+    	<mkdir dir="build/class14" />
+        <mkdir dir="build/class16" />
+    	<mkdir dir="build/dist" />
+    	<mkdir dir="build/jar" />
+    	<mkdir dir="build/java" />
+    	<mkdir dir="build/java14" />
+    	<mkdir dir="build/javadoc" />
+    	<mkdir dir="build/junit" />
+    	<mkdir dir="build/tmp" />
 	</target>
 	
 	<condition property="testIncreaseBuildNumber">
@@ -178,7 +179,7 @@
       </java>
 	</target>
     
-    <target name="buildClassesNoDriver" depends="_init" description="Compiles all java source into the build/class directory">
+    <target name="buildClasses" depends="_init" description="Compiles all java source into the build/class directory">
       <javac 
          destdir="build/class"
  	     compiler="classic"
@@ -187,8 +188,7 @@
       >
         <classpath refid="classpath.all.lib" />
         <src path="src/java" />
-        <include name="net/sf/p7spy/**"/>
-      	<exclude name="net/sf/p7spy/P7SpyDriver.java" />
+        <include name="net/sf/p7spy/**/*.java"/>
       </javac>
     	
       <!-- can comment this out if not running within eclipse -->
@@ -212,8 +212,15 @@
 
     <target name="clean" description="Clean out the ./build directories">
         <delete dir="build/class" />
+    	<delete dir="build/class14" />
+        <delete dir="build/class16" />
+    	<delete dir="build/dist" />
     	<delete dir="build/jar" />
+    	<delete dir="build/java" />
+    	<delete dir="build/java14" />
     	<delete dir="build/javadoc" />
+    	<delete dir="build/junit" />
+    	<delete dir="build/tmp" />
     </target>
 
     <target name="p7spy14">
@@ -221,7 +228,7 @@
         <mkdir dir="build/java" />
         <mkdir dir="${dest14}/net/sf/p7spy"/>
 
-        <echo message="Generating 1.4 ClassGenerator"/>
+        <echo message="Compiling 1.4 ClassGenerator"/>
         <javac
             fork="true" 
             source="1.4" target="1.4"
@@ -272,20 +279,6 @@
 	            </fileset>
             </classpath>
         </javac>
-
-    	<!--
-        <echo message="Building p7spy JAR"/>
-        <delete dir="build/tmp/jar" />
-        <mkdir dir="build/tmp/jar" />
-          <jar destfile="build/jar/p7spy.jar" >
-            <fileset dir="${dest14}" >
-                <include name="net/sf/p7spy/**.class"/>
-              </fileset>
-              <manifest>
-                  <attribute name="Main-Class" value="net.sf.p7spy.P7SpyUtil"/>
-              </manifest>
-        </jar>
-        -->
     </target>
 
 	
@@ -294,7 +287,7 @@
         <mkdir dir="build/java" />
         <mkdir dir="${dest16}/net/sf/p7spy"/>
 
-        <echo message="Generating 1.6 ClassGenerator"/>
+        <echo message="Compiling 1.6 ClassGenerator"/>
         <javac
             fork="true" 
             source="1.6" target="1.6"
@@ -324,7 +317,7 @@
               <fileset dir="lib/runtime">
                   <include name="**/*.jar"/>
               </fileset>
-              <pathelement location="${dest14}" />
+              <pathelement location="${dest16}" />
             </classpath>
         </java>
         
@@ -332,34 +325,46 @@
         <javac
             fork="true" 
             source="1.6" target="1.6"
-            executable="${jdk14Dir}/bin/javac.exe"
+            executable="${jdk16Dir}/bin/javac.exe"
             
             srcdir="build/java16"
             destdir="${dest16}"
         >
-            <include name="net/sf/p7spy/**.java" />
+            <include name="net/sf/p7spy/**/*.java" />
         	<classpath>
 	            <fileset dir="lib/runtime">
 	                <include name="**/*.jar"/>
 	            </fileset>
+        		<pathelement location="${dest14}" />
             </classpath>
         </javac>
+    </target>
 
-    	<!--
+	<target name="p7spyJar" depends="_init, buildClasses, _increaseBuildNumber, p7spy14, p7spy16" >
         <echo message="Building p7spy JAR"/>
         <delete dir="build/tmp/jar" />
         <mkdir dir="build/tmp/jar" />
-          <jar destfile="build/jar/p7spy.jar" >
+    	
+		<!-- All class binaries will be at 1.4 level except for 1.6-specific wrappers -->
+        <jar destfile="build/jar/p7spy.jar" >
             <fileset dir="${dest14}" >
                 <include name="net/sf/p7spy/**.class"/>
-              </fileset>
+            </fileset>
               <manifest>
                   <attribute name="Main-Class" value="net.sf.p7spy.P7SpyUtil"/>
               </manifest>
         </jar>
-        -->
-    </target>
-
+        <jar destfile="build/jar/p7spy.jar" update="true">
+            <fileset dir="${dest16}" >
+                <include name="net/sf/p7spy/impl16/**.class"/>
+            </fileset>
+        </jar>
+        <jar destfile="build/jar/p7spy.jar" update="true">
+            <fileset dir="src/resources" >
+                <include name="p7spyBuild.properties"/>
+            </fileset>
+        </jar>
+	</target>
 	
     <!-- additionalparam="-J-Xss20M -J-Xmx128M" -->
 	<target name="javadoc" depends="_init" description="Runs the standard java doclet over the Java source code">
@@ -474,22 +479,41 @@ and then hit "Y"
 		</exec>
 	</target>
 
-	<target name="junit" depends="p7spy14" description="Run junit tests and generate XML and HTML reports">
-		<junit fork="yes" jvm="${jdk14Dir}/bin/java.exe" 
-			printsummary="no" haltonfailure="no" dir="${basedir}/build/jni">
+	<target name="junit" description="Run junit tests and generate XML and HTML reports">
+		<echo message="Running 1.4 unit tests" />
+	  <junit fork="yes" jvm="${jdk14Dir}/bin/java.exe" 
+			printsummary="no" haltonfailure="no" dir="${basedir}">
 	    <batchtest fork="yes" todir="build/junit" >
-	      <fileset dir="${dest14}">
-	        <!-- <include name="**/*Test.class" /> -->
+	      <!-- <fileset dir="${dest14}">
+	        < ! -  - <include name="**/*Test.class" />  - - > 
 	      	<include name="**/P7SpyTest.class" />
-	      </fileset>
+	      </fileset> -->
+	    	
+	      <fileset dir="${dest14}"><include name="net/sf/p7spy/test/P7SpyTest.class" /></fileset>
 	    </batchtest>
 	    <formatter type="xml" />
         <classpath>
-          <pathelement location="${dest14}" />
+          <pathelement location="build/class14" />  <!-- includes test class. -->
+          <pathelement location="build/jar/p7spy.jar" />
           <path refid="classpath.test" />
         </classpath>
 	  </junit>
 
+		<echo message="Running 1.6 unit tests" />
+	  <junit fork="yes" jvm="${jdk16Dir}/bin/java.exe" 
+			printsummary="no" haltonfailure="no" dir="${basedir}">
+	    <batchtest fork="yes" todir="build/junit" >
+	      	<fileset dir="${dest14}"><include name="net/sf/p7spy/test/P7SpyTest16.class" /></fileset>
+	    </batchtest>
+	    <formatter type="xml" />
+        <classpath>
+        	<pathelement location="build/class14" />  <!-- includes test class. should probably use yet another classpath for this -->
+          <pathelement location="build/jar/p7spy.jar" />
+          <path refid="classpath.test" />
+        </classpath>
+	  </junit>
+		
+		
 	  <junitreport todir="build/junit">
 	    <fileset dir="build/junit">
 	      <include name="TEST-*.xml" />
