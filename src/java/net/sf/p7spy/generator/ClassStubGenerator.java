@@ -50,7 +50,7 @@ public class ClassStubGenerator {
      *  <p>If component is null, this function returns null.
      *  <p>If component contains no periods, this function returns the original string.
      *
-     *  @param component The string to retrieve the last component from
+     *  @param string The string to retrieve the last component from
      */
     static public String getLastComponent(String string) {
         if (string == null) {
@@ -66,7 +66,7 @@ public class ClassStubGenerator {
      * An efficient search & replace routine. Replaces all instances of
      * searchString within str with replaceString.
      *
-     * @param str The string to search
+     * @param originalString The string to search
      * @param searchString The string to search for
      * @param replaceString The string to replace it with
      *
@@ -120,19 +120,10 @@ public class ClassStubGenerator {
      * @TODO allow multiple interfaces to be supplied
      * 
      * @param aclass The class/interface to retrieve signature information for
+     * @param stubClassName the fully qualified type name of the stub being created
      * @param stubType a STUB_* constant
      * 
      * @return A string representation of the class signatures.
-     */
-    /*
-     * @TODO get log4j category from driver properties
-     * @TODO definable logging bitmask (or as properties again); or use separate categories for:
-     *   1 - creation/destruction of connections
-     *   2 - anything with SQL in it
-     *   4 - everything else
-     *   8 - if missing, return exception handling as bool, otherwise include stack
-     *   16 - log SQL resultset data
-     * @TODO use dynamic proxies so instanceof conditionals still work
      */
     public String getClassStub(Class aclass, String stubClassName, int stubType) 
     {

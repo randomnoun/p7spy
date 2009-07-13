@@ -27,10 +27,11 @@ import org.xml.sax.SAXException;
 
 /** P7Spy utilities.
  * 
- * <p>Currently just generates a p7spy-ed versions of a jboss datasource definition 
- * document.
+ * <p>A command line utility to generate a p7spy-ed versions of a jboss datasource definition 
+ * document. The file containing the datasource definition should be specified as the first argument 
+ * to the program.
  * 
- * <p>Could use XSLT for this, but I find using that akin to be punched repeatedly
+ * <p><i>Implementation note:</i> Could use XSLT for this, but I find using that akin to be punched repeatedly
  * in the face with a brick.
  * 
  * @TODO update the log4j config as well. But that's not going to be as generic
@@ -49,7 +50,7 @@ public class P7SpyUtil {
      *
      * @throws IOException A problem occurred whilst attempting to read the string
      */
-    public static String getFileContents(String filename)
+    private static String getFileContents(String filename)
         throws IOException {
         File file = new File(filename);
         FileInputStream fis = new FileInputStream(file);
@@ -68,7 +69,7 @@ public class P7SpyUtil {
 	 * 
 	 * @param text the string representation of the XML to parse 
 	 */
-	public static Document toDocument(String text) throws SAXException {
+	private static Document toDocument(String text) throws SAXException {
 		try {
 			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -93,7 +94,7 @@ public class P7SpyUtil {
 	 * @param element the element that contains, as child nodes, the text to be returned.
 	 * @return the contents of all the CDATA children of the specified element.
 	 */
-	public static String getXmlText(Element element)
+	private static String getXmlText(Element element)
 	{
 		if (element == null) { throw new NullPointerException("null element"); }
 		StringBuffer buf = new StringBuffer();
@@ -121,7 +122,7 @@ public class P7SpyUtil {
 	 * @throws TransformerException if the transformation to XML failed
 	 * @throws IllegalStateException if the transformer could not be initialised 
 	 */
-	public static String writeXml(Node node, boolean omitXmlDeclaration) 
+	private static String writeXml(Node node, boolean omitXmlDeclaration) 
 		throws TransformerException 
 	{
 		// Use a Transformer for output

@@ -198,7 +198,7 @@ public class IncreaseBuildNumber {
 	 * @param baseDir Base directory that the source parameters are relative to
 	 * @param source Directory of the source that this build will be retrieved from 
 	 * @param source2 Directory of the second source that this build will be retrieved from
-	 * @param source2 Directory of the third source that this build will be retrieved from
+	 * @param source3 Directory of the third source that this build will be retrieved from
 	 * @param file If set to null, dumps the build.properties output to System.out, otherwise will
 	 *   write to this file.
 	 */

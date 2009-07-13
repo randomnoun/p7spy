@@ -36,7 +36,7 @@ public class P7SpyTest16
     extends TestCase
 {
 	
-	P7SpyTest p7SpyTest14 = new P7SpyTest("P7SpyTests for JDK14");
+	P7SpyTest14 p7SpyTest14 = new P7SpyTest14("P7SpyTests for JDK14");
 
 	/** Logger instance for this class */
 	public static Logger logger = Logger.getLogger(P7SpyTest16.class);
@@ -44,7 +44,7 @@ public class P7SpyTest16
     /**
      * Create the test case
      *
-     * @param tesName name of the test case
+     * @param testName name of the test case
      */
     public P7SpyTest16( String testName )
     {
