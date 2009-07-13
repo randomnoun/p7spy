@@ -463,10 +463,10 @@ and then hit "Y"
 	    <batchtest fork="yes" todir="build/junit" >
 	      <!-- <fileset dir="${dest14}">
 	        < ! -  - <include name="**/*Test.class" />  - - > 
-	      	<include name="**/P7SpyTest.class" />
+	      	<include name="**/P7SpyTest14.class" />
 	      </fileset> -->
 	    	
-	      <fileset dir="${dest14}"><include name="net/sf/p7spy/test/P7SpyTest.class" /></fileset>
+	      <fileset dir="${dest14}"><include name="net/sf/p7spy/test/P7SpyTest14.class" /></fileset>
 	    </batchtest>
 	    <formatter type="xml" />
         <classpath>
@@ -523,7 +523,7 @@ and then hit "Y"
           <filter includes="net.sf.p7spy.*" />
         </instr>
       </emma>
-      <java classname="net.sf.p7spy.test.P7SpyTest" fork="true"
+      <java classname="net.sf.p7spy.test.P7SpyTest14" fork="true"
       	dir="build/jni"
         output="${basedir}/build/junit/reports-emma.txt"
       >
