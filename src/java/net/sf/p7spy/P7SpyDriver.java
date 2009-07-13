@@ -76,7 +76,7 @@ public class P7SpyDriver implements Driver {
 	/** Major version number reported by {@link #getMajorVersion()} */
 	public static final int MAJOR_VERSION = 1;
 
-	/** @inherit */
+	/** {@inheritDoc} */
 	public boolean acceptsURL(String url) throws SQLException {
 		return url.startsWith("jdbc:p7spy:") || url.startsWith("jdbc:p7spy#");
 	}
@@ -84,7 +84,7 @@ public class P7SpyDriver implements Driver {
     /** Logger used to dump method invocations */
     private static final Logger logger = Logger.getLogger(P7SpyDriver.class);
 
-    /** @inherit */
+    /** {@inheritDoc} */
 	public Connection connect(String url, Properties info) throws SQLException {
 		logger.debug("P7SpyDriver.connect('" + url + "', " + info.toString());
 		String wrappedUrl;

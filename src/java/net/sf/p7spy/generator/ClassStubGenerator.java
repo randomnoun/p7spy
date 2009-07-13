@@ -339,7 +339,7 @@ public class ClassStubGenerator {
      * on failure
      * 
      * @param object object to invoke method on
-     * @param method method to invoke
+     * @param methodName method to invoke
      * 
      * @return result of method invocation
      * 
