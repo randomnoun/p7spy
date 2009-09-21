@@ -29,12 +29,12 @@ import junit.framework.TestSuite;
  * 
  * @TODO increase coverage to include all SQL datatypes / JDBC methods
  */
-public class P7SpyTest14 
+public class P7Spy14Test 
     extends TestCase
 {
 
 	/** Logger instance for this class */
-	public static Logger logger = Logger.getLogger(P7SpyTest14.class);
+	public static Logger logger = Logger.getLogger(P7Spy14Test.class);
 	
 	/** log4j Appender used to test generated log4j text */
 	public static class MemoryAppender extends AppenderSkeleton {
@@ -76,7 +76,7 @@ public class P7SpyTest14
      *
      * @param testName name of the test case
      */
-    public P7SpyTest14( String testName )
+    public P7Spy14Test( String testName )
     {
         super( testName );
     }
@@ -86,7 +86,7 @@ public class P7SpyTest14
      */
     public static Test suite()
     {
-        return new TestSuite( P7SpyTest14.class );
+        return new TestSuite( P7Spy14Test.class );
     }
 
     public void setUp() {
@@ -100,7 +100,7 @@ public class P7SpyTest14
 		props.put("log4j.appender.CONSOLE", "org.apache.log4j.ConsoleAppender");
 		props.put("log4j.appender.CONSOLE.layout", "org.apache.log4j.PatternLayout");
 		props.put("log4j.appender.CONSOLE.layout.ConversionPattern", "%d{ABSOLUTE}, %-5p [%-30X{p7Id}] [%5X{p7Duration}] %m%n");
-		props.put("log4j.appender.MEMORY", P7SpyTest14.MemoryAppender.class.getName());
+		props.put("log4j.appender.MEMORY", P7Spy14Test.MemoryAppender.class.getName());
 		
 		props.put("log4j.logger.net.sf.p7spy", "DEBUG");		 
 		PropertyConfigurator.configure(props);

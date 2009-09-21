@@ -27,26 +27,26 @@ import junit.framework.TestSuite;
 /**
  * Unit test for p7spy. Should test in 1.6 VMs.
  * 
- * This unit test will include all tests in {@link net.sf.p7spy.test.P7SpyTest14}.
+ * This unit test will include all tests in {@link net.sf.p7spy.test.P7Spy14Test}.
  * 
  * @TODO increase coverage to include all SQL datatypes / JDBC methods
  * @TODO call the 14 tests.
  */
-public class P7SpyTest16 
+public class P7Spy16Test 
     extends TestCase
 {
 	
-	P7SpyTest14 p7SpyTest14 = new P7SpyTest14("P7SpyTests for JDK14");
+	P7Spy14Test p7SpyTest14 = new P7Spy14Test("P7SpyTests for JDK14");
 
 	/** Logger instance for this class */
-	public static Logger logger = Logger.getLogger(P7SpyTest16.class);
+	public static Logger logger = Logger.getLogger(P7Spy16Test.class);
 	
     /**
      * Create the test case
      *
      * @param testName name of the test case
      */
-    public P7SpyTest16( String testName )
+    public P7Spy16Test( String testName )
     {
         super( testName );
     }
@@ -56,7 +56,7 @@ public class P7SpyTest16
      */
     public static Test suite()
     {
-        return new TestSuite( P7SpyTest16.class );
+        return new TestSuite( P7Spy16Test.class );
     }
 
     public void setUp() {

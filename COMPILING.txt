@@ -1,3 +1,8 @@
+
+*** This project is in the process of being migrated to the maven 2
+*** build system. Some ant tasks may not work as expected. 
+*** 
+
 p7spy requires a cygwin installation, and a Java 1.4 and 1.6 JDK. 
 It was developed using Eclipse 3.4.2, so if you wish to use the .project files to compile 
 this application, you should probably download these from:

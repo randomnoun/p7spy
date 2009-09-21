@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.p7spy</groupId>
+  <artifactId>p7spy</artifactId>
+  <packaging>jar</packaging>
+  <name>common</name>
+  <!--  <version>0.1.0-SNAPSHOT-${bambooBuildNumber}</version> -->
+  <version>0.4-SNAPSHOT</version>
+  <url>http://p7spy.sourceforge.net</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.9</version>
+    </dependency>
+        <dependency>
+        	<groupId>xalan</groupId>
+        	<artifactId>xalan</artifactId>
+        	<version>2.7.1</version>
+        </dependency>
+        <dependency>
+        	<groupId>gnu</groupId>
+        	<artifactId>getopt</artifactId>
+        	<version>1.0.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>2.5.6</version>
+        </dependency>
+
+        <!-- 
+        <dependency>
+        	<groupId>xerces</groupId>
+        	<artifactId>xercesImpl</artifactId>
+        	<version>2.8.1</version>
+        </dependency>
+         -->
+
+<dependency>
+   <groupId>ant-contrib</groupId>
+    <artifactId>ant-contrib</artifactId>
+    <version>1.0b2</version>
+  </dependency>
+<dependency>
+	<groupId>org.apache.derby</groupId>
+	<artifactId>derby</artifactId>
+	<version>10.5.3.0</version>
+	<scope>test</scope>
+</dependency>
+
+
+  </dependencies>
+  
+      
+  
+  
+  <build>  
+  <finalName>p7spy</finalName>  
+  
+ <!-- Build with Java 1.5 -->  
+ <pluginManagement>  
+     <plugins>  
+         <plugin>  
+             <groupId>org.apache.maven.plugins</groupId>  
+             <artifactId>maven-compiler-plugin</artifactId>  
+              <configuration>  
+                  <source>1.5</source>  
+                  <target>1.5</target>  
+              </configuration>  
+          </plugin>  
+      </plugins>  
+  </pluginManagement>
+  <plugins>
+  
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+      
+    <configuration>
+     <tasks>
+      <property name="compile_classpath" refid="maven.compile.classpath"/>
+      <property name="runtime_classpath" refid="maven.runtime.classpath"/>
+      <property name="test_classpath" refid="maven.test.classpath"/>
+      <property name="plugin_classpath" refid="maven.plugin.classpath"/>
+      <property name="db.username" value="${db.username}"/>
+      
+      <ant antfile="${basedir}/build.xml" inheritRefs="true" inheritAll="true">
+        <target name="all" />
+        <target name="javadoc" />
+        <target name="p7spyJar" />
+        <target name="distribution" />
+      </ant>
+     </tasks>
+    </configuration>
+    <executions>
+    	<execution>
+    		<id>ant-tasks</id>
+    		<phase>process-sources</phase>
+    		<goals>
+    			<goal>run</goal>
+    		</goals>
+    	</execution>
+    </executions>
+   </plugin>
+  
+  
+  </plugins>  
+    </build>  
+    <distributionManagement>
+  	<repository>
+  		<id>releases</id>
+  		<name>randomnoun releases</name>
+  		<url>http://basdev04:8082/nexus/content/repositories/releases/</url>
+  	</repository>
+  	<snapshotRepository>
+  		<id>snapshots</id>
+  		<name>randomnoun snapshots</name>
+  		<url>http://basdev04:8082/nexus/content/repositories/snapshots/</url>
+  		<uniqueVersion>false</uniqueVersion>
+  	</snapshotRepository>
+  </distributionManagement>
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<derby.version>10.5.3.0</derby.version>
+	</properties>
+  
+  
+</project>

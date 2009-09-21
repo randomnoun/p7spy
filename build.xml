@@ -16,10 +16,10 @@
       
       Properties you may wish to modify:
 
-        jdkDir:    location of a Java 1.4 JDK
+        jdk14Dir:  location of a Java 1.4 JDK
                    defaults to "C:/Java/jdk1.4.2_19"      
 
-        jdkDir:    location of a Java 1.6 JDK
+        jdk16Dir:  location of a Java 1.6 JDK
                    defaults to "C:/Java/jdk1.6.0_13"      
         
         cygwinDir: location of cygwin (for bash, zip etc)
@@ -61,7 +61,6 @@
 	<property name="p7spyReleaseVersion" value="0.3" />
 	
 	<property name="currentDir" value="${user.dir}" />
-	<property name="increaseBuildNumber" value="false" />
 
 	<property name="dest" value="build/class" />
 	<property name="dest14" value="build/class14"/>
@@ -137,42 +136,7 @@
     	<mkdir dir="build/tmp" />
 	</target>
 	
-	<condition property="testIncreaseBuildNumber">
-		<equals arg1="${increaseBuildNumber}" arg2="false" />
-	</condition>
-	<target name="_increaseBuildNumber" description="Increase build number; only run this on the main build machine" unless="testIncreaseBuildNumber">
-	  <echo message="Increasing build number"/>
-      <java classname="net.sf.p7spy.util.IncreaseBuildNumber" 
-         fork="true" 
-         dir="."
-         jvm="${jdkDir}/bin/java"
-         failonerror = "true"
-      >
-        <classpath>
-          <path refid="classpath.all.lib" />
-          <path location="build/class" />
-        </classpath> 
-        <arg value="--jdbcUrl" />
-        <arg value="${buildDatabase.jdbcUrl}" />
-        <arg value="--username" />
-        <arg value="${buildDatabase.username}" />
-        <arg value="--password" />
-        <arg value="${buildDatabase.password}" />
-        <arg value="--product" />
-        <arg value="p7spy" />
-        <arg value="--release" />
-        <arg value="${p7spyReleaseVersion}" />
-        <arg value="--baseDir" />
-        <arg value="." />
-        <arg value="--source" />
-        <arg value="src/java" />
-        <arg value="--source2" />
-        <arg value="src/c" />
-        <arg value="--file" />
-        <arg value="src/resources/p7spyBuild.properties" />
-      </java>
-	</target>
-    
+   
     <target name="buildClasses" depends="_init" description="Compiles all java source into the build/class directory">
       <javac 
          destdir="build/class"
@@ -181,7 +145,7 @@
 	     debug="on"
       >
         <classpath refid="classpath.all.lib" />
-        <src path="src/java" />
+        <src path="src/main/java" />
         <include name="net/sf/p7spy/**/*.java"/>
       </javac>
     	
@@ -213,7 +177,7 @@
             fork="true" 
             source="1.4" target="1.4"
             executable="${jdk14Dir}/bin/javac.exe"
-            srcdir="src/java"
+            srcdir="src/main/java"
             destdir="${dest14}"
         >
         	<!-- @TODO this could be simplified a bit -->
@@ -270,7 +234,7 @@
             fork="true" 
             source="1.6" target="1.6"
             executable="${jdk16Dir}/bin/javac.exe"
-            srcdir="src/java"
+            srcdir="src/main/java"
             destdir="${dest16}"
         >
             <include name="net/sf/p7spy/generator/ClassStubGenerator.java" />
@@ -317,7 +281,7 @@
         </javac>
     </target>
 
-	<target name="p7spyJar" depends="_init, buildClasses, _increaseBuildNumber, p7spy14, p7spy16" >
+	<target name="p7spyJar" depends="_init, buildClasses, p7spy14, p7spy16" >
         <echo message="Building p7spy JAR"/>
         <delete dir="build/tmp/jar" />
         <mkdir dir="build/tmp/jar" />
@@ -349,12 +313,12 @@
 		<javadoc access="public"
             destdir="build/javadoc"
             additionalparam="-breakiterator "
-            sourcepath="src/java"
+            sourcepath="src/main/java"
 			stylesheetfile="doc/javadoc-stylesheet.css" 
           >
 		  
           <classpath refid="classpath.all.lib" />
-          <packageset dir="src/java" >
+          <packageset dir="src/main/java" >
              <include name="net/sf/p7spy/**/*" />
           </packageset>
         </javadoc>
@@ -558,7 +522,7 @@ and then hit "Y"
          version="true"
       >
 
-        <packageset dir="src/java" defaultexcludes="yes">
+        <packageset dir="src/main/java" defaultexcludes="yes">
           <include name="net/sf/p7spy/**"/>
           <!-- <exclude name="net/sf/p7spy/doc-files/**"/> -->
         </packageset>
