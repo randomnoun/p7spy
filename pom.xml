@@ -97,8 +97,6 @@
       <property name="plugin_classpath" refid="maven.plugin.classpath"/>
       <property name="db.username" value="${db.username}"/>
       
-      <property name="build.compiler" value="extJavac"/>
-      
       <ant antfile="${basedir}/build.xml" inheritRefs="true" inheritAll="true">
         <target name="all" />
         <target name="javadoc" />
@@ -116,6 +114,17 @@
     		</goals>
     	</execution>
     </executions>
+    <dependencies>
+    <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.4.2</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
+          </dependency>
+    </dependencies>
+    
+    
    </plugin>
   
   
