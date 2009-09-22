@@ -7,6 +7,12 @@
   <!--  <version>0.1.0-SNAPSHOT-${bambooBuildNumber}</version> -->
   <version>0.4-SNAPSHOT</version>
   <url>http://p7spy.sourceforge.net</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <derby.version>10.5.3.0</derby.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -128,10 +134,5 @@
   		<uniqueVersion>false</uniqueVersion>
   	</snapshotRepository>
   </distributionManagement>
-  <properties>
-  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<derby.version>10.5.3.0</derby.version>
-	</properties>
-  
   
 </project>
