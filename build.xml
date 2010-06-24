@@ -20,7 +20,7 @@
                    defaults to "C:/Java/jdk1.4.2_19"      
 
         jdk16Dir:  location of a Java 1.6 JDK
-                   defaults to "C:/Java/jdk1.6.0_13"      
+                   defaults to "C:/Java/jdk1.6.0_18"      
         
         cygwinDir: location of cygwin (for bash, zip etc)
                    defaults to "C:/cygwin"
@@ -41,7 +41,7 @@
 
     <!-- deployment imports (override in ../src/resources/properties folder) -->
     <property name="cygwinInstallDir" value="C:/cygwin"/>
-	<property name="jdk16Dir" value="C:/Java/jdk1.6.0_13" />
+	<property name="jdk16Dir" value="C:/Java/jdk1.6.0_18" />
 	<property name="jdk14Dir" value="C:/java/j2sdk1.4.2_19" />
 	
 	<property name="jdkDir" value="${jdk16Dir}" />
