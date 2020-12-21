@@ -11,14 +11,14 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import net.sf.p7spy.P7SpyDriver;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.LoggingEvent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+
+import com.randomnoun.p7spy.P7SpyDriver;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,4 +1,4 @@
-package net.sf.p7spy.generator;
+package com.randomnoun.p7spy.generator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

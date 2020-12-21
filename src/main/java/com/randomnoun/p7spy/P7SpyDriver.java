@@ -1,4 +1,4 @@
-package net.sf.p7spy;
+package com.randomnoun.p7spy;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -69,7 +69,7 @@ import org.apache.log4j.Logger;
  * debugging through things like
  * Proxy$12893, and it allows me to fine-tune the generated code without having
  * to worry about inevitable classloader conflicts. 
- * (The wrapper interfaces are generated using the {@link net.sf.p7spy.generator.ClassStubGenerator} class).
+ * (The wrapper interfaces are generated using the {@link com.randomnoun.p7spy.generator.ClassStubGenerator} class).
  * 
  * @author knoxg
  */

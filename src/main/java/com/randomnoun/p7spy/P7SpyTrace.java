@@ -1,4 +1,4 @@
-package net.sf.p7spy;
+package com.randomnoun.p7spy;
 
 import java.io.File;
 import java.io.FileInputStream;
