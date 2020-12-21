@@ -8,9 +8,11 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /** A JDBC tracing driver based loosely on the p6spy toolkit.  
@@ -116,15 +118,28 @@ public class P7SpyDriver implements Driver {
 		} else {
 		    wrappedUrl = "jdbc:" + url;
 		}
+		
+		// if I decide to retrofit support for old JDKs again:
+		
+		// now going to use the JDBC spec standard number rather than the JDK version
+		// because they haven't decided to renumber it half-way through.
+		/*
 		Connection wrappedConnection = DriverManager.getConnection(wrappedUrl, info);
-		String connectionClass = "net.sf.p7spy.impl14.P7Connection";
+		String connectionClass = "net.sf.p7spy.jdbc_3_0.P7Connection"; // was impl14
 		try {
 			Method m = Statement.class.getMethod("isPoolable", new Class[] {});
 			// if this didn't throw an exception, we can use the impl16 class
-			connectionClass = "net.sf.p7spy.impl16.P7Connection";
+			connectionClass = "net.sf.p7spy.jdbc_4_0.P7Connection"; // was impl16
+			
+			
+			
 		} catch (Exception e) {
 			// safe to ignore
 		}
+		*/
+		
+		Connection wrappedConnection = DriverManager.getConnection(wrappedUrl, info);
+		String connectionClass = "com.randomnoun.p7spy.jdbc_4_3.P7Connection"; // JDK 9+
 		
 		Connection conn = null;
 		try {
@@ -194,6 +209,12 @@ public class P7SpyDriver implements Driver {
 		} catch (SQLException sqle) {
 			Logger.getLogger(P7SpyDriver.class).error("Could not register p7spy driver", sqle);
 		}
+	}
+
+	// from JDK 11. Should probably just construct a new one.
+	/** Logger required by JDBC contract for some reason */
+	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		return java.util.logging.Logger.getLogger(P7SpyDriver.class.getName());
 	}
 
 }
