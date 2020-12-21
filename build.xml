@@ -25,10 +25,6 @@
         cygwinDir: location of cygwin (for bash, zip etc)
                    defaults to "C:/cygwin"
                    
-        bin.cvs:   location of an Eclipse-compatible CVS executable 
-                   (NB: the one bundled with cygwin isn't)
-        		   defaults to "C:/Program Files/CVSNT/cvs.exe"
-        
       Feel free to override any others.
       
    -->
@@ -45,7 +41,6 @@
 	<property name="jdk14Dir" value="C:/java/j2sdk1.4.2_19" />
 	
 	<property name="jdkDir" value="${jdk16Dir}" />
-	<property name="bin.cvs" value="C:/Program Files/CVSNT/cvs.exe" />
 	<property name="bin.pscp" value="C:/Program Files/PuTTY/pscp.exe" />
 
 	<property name="bin.bash" value="${cygwinInstallDir}/bin/bash" />
@@ -324,60 +319,7 @@
         </javadoc>
     </target>
 	
-	<target name="statcvs" depends="_init" description="Generate CVS statistics for this project.">
-	    <echo message="Generating CVS log" />
-		<echo>
-Warning: the first time you run this, this task may appear to
-hang. If you check the 'build/statcvs/cvs.log' file and it requests
-confirmation of the server's SSL key, then run the following lines
-from a command line:
 
-	C:\Documents and Settings\knoxg\My Documents\workspace\p7spy>"c:\program files\cvsnt\cvs" login
-	Logging in to :extssh:yourusername@p7spy.cvs.sourceforge.net:22:/cvsroot/p7spy
-	CVS Password: xxxxxx
-	The server's host key is not cached in the registry. You
-	have no guarantee that the server is the computer you
-	think it is.
-	The server's key fingerprint is:
-	1024 21:20:02:30:ef:5f:cc:6d:38:1a:36:4b:fc:5f:33:57
-	If you trust this host, hit Yes to add the key to
-	PuTTY's cache and carry on connecting.
-	If you want to carry on connecting just once, without
-	adding the key to the cache, hit No.
-	If you do not trust this host, hit Cancel to abandon the
-	connection.			
-
-and then hit "Y"
-			
-(ignore this message if you have already performed the steps above)			
-		</echo>
-
-		<mkdir dir="build/statcvs" />
-		<exec dir="." 
-			executable="${bin.cvs}" 
-			output="build/statcvs/cvs.log"
-		>
-			<arg value="log" />
-			<redirector error="build/statcvs/cvs-error.log" />
-		</exec>
-		<echo message="Generating CVS statistics" />
-        <java classname="net.sf.statcvs.Main" 
-			fork="true" 
-	        dir="build/statcvs"
-	        jvm="${jdkDir}/bin/java"
-	        failonerror = "true"
-	     >
-	        <classpath>
-	          <path refid="classpath.all.lib" />
-	        </classpath> 
-	        <arg value="./cvs.log" />
-	        <arg value="../.." />
-		</java>
-	    <echo message="Refreshing project" />
-	    <!-- doesn't work in Eclipse Europa (v3.3.0)
-	    <eclipse.refreshLocal resource="p7spy" />
-	    -->
-	</target>
 	
 	<target name="distribution" depends="all" description="Creates a p7spy distribution for uploading to sourceforge">
 		<mkdir dir="build/dist" />
@@ -535,43 +477,5 @@ and then hit "Y"
       </javadoc>
     </target>
 
-    <target name="uploadDocumentsToSourceforge" 
-      description="Updates the sourceforge site with the latest javadoc, doccheck, emma, statcvs output" >
-    	<echo message="Copying javadocs..."/>
-		<exec executable="${bin.pscp}" dir="." >
-			<arg value="-pw" />
-			<arg value="${sourceforge.password}" />
-		    <arg value="-r" />
-			<arg value="build/javadoc/*" />
-			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/javadoc" />
-		</exec>
-
-    	<echo message="Copying doccheck..."/>
-		<exec executable="${bin.pscp}" dir="." >
-			<arg value="-pw" />
-			<arg value="${sourceforge.password}" />
-		    <arg value="-r" />
-			<arg value="build/doccheck/*" />
-			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/doccheck" />
-		</exec>
-
-    	<echo message="Copying emma..."/>
-		<exec executable="${bin.pscp}" dir="." >
-			<arg value="-pw" />
-			<arg value="${sourceforge.password}" />
-		    <arg value="-r" />
-			<arg value="build/emma/report/*" />
-			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/emma" />
-		</exec>
-
-    	<echo message="Copying statcvs..."/>
-		<exec executable="${bin.pscp}" dir="." >
-			<arg value="-pw" />
-			<arg value="${sourceforge.password}" />
-		    <arg value="-r" />
-			<arg value="build/statcvs/*" />
-			<arg value="${sourceforge.username}@shell.sourceforge.net:/home/groups/p/p7/p7spy/htdocs/doc/statcvs" />
-		</exec>
-    </target>
 	
 </project>
