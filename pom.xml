@@ -12,8 +12,7 @@
 
 	<!--  version 0.x of this project was when it was hosted on sourceforge; driver name was net.sf.p7spy.P7SpyDriver. 
 	        It self-reported as version 1 in P7SpyDriver.getMajorVersion()
-	      version 1.x never existed 
-	      version 2.x has a driver name of com.randomnoun.p7spy.P7SpyDriver 
+	      version 1.x never existed yh
 	 -->
 
 	<properties>
@@ -60,11 +59,14 @@
 		    <artifactId>derbyclient</artifactId>
 		    <version>10.15.2.0</version>
 		</dependency>
-
-
 	</dependencies>
-
-
+	
+	<scm>
+		<connection>scm:git:http://gitlab.dev.randomnoun/randomnoun/p7spy.git</connection>
+		<developerConnection>scm:git:http://gitlab.dev.randomnoun/randomnoun/p7spy.git</developerConnection>
+		<url>http://gitlab.dev.randomnoun/randomnoun/p7spy</url>
+  	    <tag>HEAD</tag>
+    </scm>
 
 
 	<build>
@@ -76,11 +78,80 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
 					<configuration>
 						<source>11</source>
 						<target>11</target>
+						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.15</version>
+                    <configuration>
+                        <!--  x<argLine>${surefireArgLine} ${surefireArgLine2}</argLine> -->
+                        <systemPropertyVariables>
+                            <runOrder>alphabetical</runOrder>
+                        </systemPropertyVariables>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*TestSuite.java</include>
+                        </includes>
+                    </configuration>
+
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.3</version>
+					<dependencies>
+						<dependency>
+							<groupId>lt.velykis.maven.skins</groupId>
+							<artifactId>reflow-velocity-tools</artifactId>
+							<version>1.0.0</version>
+						</dependency>
+						<!-- Reflow skin requires Velocity >= 1.7 -->
+						<dependency>
+							<groupId>org.apache.velocity</groupId>
+							<artifactId>velocity</artifactId>
+							<version>1.7</version>
+						</dependency>
+						<dependency>
+							<groupId>com.randomnoun.maven.doxia</groupId>
+							<artifactId>doxia-module-html</artifactId>
+							<version>1.1.0</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+					<!-- 
+					  this configuration is used during the javadoc:jar goal during the release
+					  configuration for the reports is in the <reporting> section  
+					-->
+					<configuration>
+	                	<additionalparam>-Xdoclint:none</additionalparam>
+	                	<failOnError>false</failOnError>
+						<javadocDirectory>${project.basedir}/src/main/javadoc</javadocDirectory>
+						<docfilessubdirs>true</docfilessubdirs>
+						<author>true</author>
+						<linksource>true</linksource>
+					</configuration>
+				</plugin>
+				
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -89,6 +160,25 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											javacc-maven-plugin
+										</artifactId>
+										<versionRange>
+											[2.5,)
+										</versionRange>
+										<goals>
+											<goal>jtb-javacc</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
@@ -113,8 +203,8 @@
 					</configuration>
 				</plugin>
 			</plugins>
-		</pluginManagement>
-		
+		</pluginManagement>				
+				
 		<plugins>
 			<plugin>
 			    <groupId>org.apache.maven.plugins</groupId>
@@ -177,8 +267,65 @@
 	        </plugin>
 			  
 		</plugins>
-				
 	</build>
+	
+	<reporting>
+		<plugins>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+		          <webAccessUrl>https://github.com/randomnoun/log4j-one</webAccessUrl>
+		          <anonymousConnection>scm:git:ssh://git@github.com:randomnoun/log4j-one.git</anonymousConnection>
+		          <developerConnection>scm:git:ssh://git@github.com:randomnoun/log4j-one.git</developerConnection>
+		        </configuration>
+            </plugin>
+            
+            <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<!-- 
+				  this configuration is used during the site:site goal during the release
+				  configuration for the javadoc artifact is in the <pluginManagement> section  
+				-->
+				<configuration>
+                	<additionalparam>-Xdoclint:none</additionalparam>
+                	<failOnError>false</failOnError>
+					<javadocDirectory>${project.basedir}/src/main/javadoc</javadocDirectory>
+					<docfilessubdirs>true</docfilessubdirs>
+					<author>true</author>
+					<linksource>true</linksource>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>javadoc</report>
+							<report>test-javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.19.1</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<linkJavadoc>true</linkJavadoc>
+					<javadocDir>target/site/apidocs</javadocDir> 
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</reporting>
 	
 	<distributionManagement>
 		<repository>
