@@ -3,7 +3,7 @@
 	
 	<groupId>net.sf.p7spy</groupId>
 	<artifactId>p7spy</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<packaging>jar</packaging>
 	
 	<name>p7spy</name>
@@ -65,7 +65,7 @@
 		<connection>scm:git:http://gitlab.dev.randomnoun/randomnoun/p7spy.git</connection>
 		<developerConnection>scm:git:http://gitlab.dev.randomnoun/randomnoun/p7spy.git</developerConnection>
 		<url>http://gitlab.dev.randomnoun/randomnoun/p7spy</url>
-  	    <tag>HEAD</tag>
+  	    <tag>p7spy-2.0.0</tag>
     </scm>
 
 
@@ -195,7 +195,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
