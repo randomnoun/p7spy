@@ -76,7 +76,7 @@ import org.apache.log4j.Logger;
 public class P7SpyDriver implements Driver {
 
 	/** Major version number reported by {@link #getMajorVersion()} */
-	public static final int MAJOR_VERSION = 1;
+	public static final int MAJOR_VERSION = 2;
 
 	/** {@inheritDoc} */
 	public boolean acceptsURL(String url) throws SQLException {
@@ -174,6 +174,7 @@ public class P7SpyDriver implements Driver {
 	 * or 0 if not an 'official' build.
 	 */
 	public int getMinorVersion() {
+		/*
 		int buildNumber;
 		try {
 			InputStream is = P7SpyDriver.class.getClassLoader().getResourceAsStream("p7spyBuild.properties");
@@ -186,6 +187,8 @@ public class P7SpyDriver implements Driver {
 			throw new RuntimeException(e);
 		}
 		return buildNumber;
+		*/
+		return 0;
 	}
 
 	/** Returns the DriverPropertyInfo of the wrapped connection */
