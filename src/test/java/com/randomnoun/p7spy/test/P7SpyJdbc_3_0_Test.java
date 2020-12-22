@@ -154,7 +154,7 @@ public class P7SpyJdbc_3_0_Test
         
         String connectionURL = "jdbc:p7spy#org.apache.derby.iapi.jdbc.AutoloadedDriver:derby:memory:" + dbName + ";create=true";
         
-        Class.forName(driver); 
+        // Class.forName(driver); 
         Connection conn = DriverManager.getConnection(connectionURL);		 
 		DataSource ds = new SingleConnectionDataSource(conn, true);
 		JdbcTemplate jt = new JdbcTemplate(ds);
