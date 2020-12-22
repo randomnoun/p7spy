@@ -1,4 +1,4 @@
-package net.sf.p7spy.test;
+package com.randomnoun.p7spy.test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,6 +15,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.LoggingEvent;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -29,12 +30,12 @@ import junit.framework.TestSuite;
  * 
  * @TODO increase coverage to include all SQL datatypes / JDBC methods
  */
-public class P7Spy14Test 
+public class P7SpyJdbc_3_0_Test 
     extends TestCase
 {
 
 	/** Logger instance for this class */
-	public static Logger logger = Logger.getLogger(P7Spy14Test.class);
+	public static Logger logger = Logger.getLogger(P7SpyJdbc_3_0_Test.class);
 	
 	/** log4j Appender used to test generated log4j text */
 	public static class MemoryAppender extends AppenderSkeleton {
@@ -62,6 +63,7 @@ public class P7Spy14Test
 	    public List getLoggingEvents() { return new ArrayList(loggingEvents); }
 	}
 
+	public static String SQL_DROP_TABLE = "DROP TABLE wish_list";
     public static String SQL_CREATE_TABLE = 
     	"CREATE TABLE wish_list  " +
         "  (wish_id    INT         NOT NULL GENERATED ALWAYS AS IDENTITY CONSTRAINT wish_pk PRIMARY KEY, " + 
@@ -76,7 +78,7 @@ public class P7Spy14Test
      *
      * @param testName name of the test case
      */
-    public P7Spy14Test( String testName )
+    public P7SpyJdbc_3_0_Test( String testName )
     {
         super( testName );
     }
@@ -86,23 +88,23 @@ public class P7Spy14Test
      */
     public static Test suite()
     {
-        return new TestSuite( P7Spy14Test.class );
+        return new TestSuite( P7SpyJdbc_3_0_Test.class );
     }
 
     public void setUp() {
 		Properties props = new Properties();
 
 		// output looks like:
-		//   10:57:37,015, DEBUG [P7Connection@118cb3a          ] [   62] prepareStatement("INSERT INTO wish_list ( wish_item ) VALUES ( ? )"): net.sf.p7spy.impl16.P7PreparedStatement@19ea173
+		//   10:57:37,015, DEBUG [P7Connection@118cb3a          ] [   62] prepareStatement("INSERT INTO wish_list ( wish_item ) VALUES ( ? )"): com.randomnoun.p7spy.impl16.P7PreparedStatement@19ea173
         //   (timestamp)  (level) (object instance)               (time)  (method call: result)
 		
 		props.put("log4j.rootCategory", "INFO, CONSOLE, MEMORY");
 		props.put("log4j.appender.CONSOLE", "org.apache.log4j.ConsoleAppender");
 		props.put("log4j.appender.CONSOLE.layout", "org.apache.log4j.PatternLayout");
 		props.put("log4j.appender.CONSOLE.layout.ConversionPattern", "%d{ABSOLUTE}, %-5p [%-30X{p7Id}] [%5X{p7Duration}] %m%n");
-		props.put("log4j.appender.MEMORY", P7Spy14Test.MemoryAppender.class.getName());
+		props.put("log4j.appender.MEMORY", P7SpyJdbc_3_0_Test.MemoryAppender.class.getName());
 		
-		props.put("log4j.logger.net.sf.p7spy", "DEBUG");		 
+		props.put("log4j.logger.com.randomnoun.p7spy", "DEBUG");		 
 		PropertyConfigurator.configure(props);
     }
     
@@ -114,16 +116,22 @@ public class P7Spy14Test
      */
     public void testPlainConnection() throws ClassNotFoundException, SQLException
     {
-        String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+        // String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+    	String driver = "org.apache.derby.iapi.jdbc.AutoloadedDriver";
         String dbName = "p7spyTestDB";
         // String connectionURL = "jdbc:derby:" + dbName + ";create=true";
         String connectionURL = "jdbc:derby:memory:" + dbName + ";create=true";
-        Class.forName(driver); 
+        // Class.forName(driver); 
         Connection conn = DriverManager.getConnection(connectionURL);		 
 		DataSource ds = new SingleConnectionDataSource(conn, true);
 		JdbcTemplate jt = new JdbcTemplate(ds);
         
         // possibly drop table if it already exists (in-memory DB?)
+		try {
+            jt.execute(SQL_DROP_TABLE);
+        } catch (DataAccessException dae) {
+        	// ignore
+        }
         jt.execute(SQL_CREATE_TABLE);
         jt.update(SQL_CREATE_ITEM, new Object[] { "thing" });
         List list = jt.queryForList(SQL_SELECT_ITEM, new Object[] { "thing" });
@@ -139,16 +147,24 @@ public class P7Spy14Test
      */
     public void testP7SpyConnection() throws ClassNotFoundException, SQLException
     {
-        String driver = "net.sf.p7spy.P7SpyDriver";
+        String driver = "com.randomnoun.p7spy.P7SpyDriver";
         String dbName = "p7spyTestDB2";
         // String connectionURL = "jdbc:derby:" + dbName + ";create=true";
-        String connectionURL = "jdbc:p7spy#org.apache.derby.jdbc.EmbeddedDriver:derby:memory:" + dbName + ";create=true";
+        // String connectionURL = "jdbc:p7spy#org.apache.derby.jdbc.EmbeddedDriver:derby:memory:" + dbName + ";create=true";
+        
+        String connectionURL = "jdbc:p7spy#org.apache.derby.iapi.jdbc.AutoloadedDriver:derby:memory:" + dbName + ";create=true";
+        
         Class.forName(driver); 
         Connection conn = DriverManager.getConnection(connectionURL);		 
 		DataSource ds = new SingleConnectionDataSource(conn, true);
 		JdbcTemplate jt = new JdbcTemplate(ds);
         
         // possibly drop table if it already exists (in-memory DB?)
+		try {
+            jt.execute(SQL_DROP_TABLE);
+        } catch (DataAccessException dae) {
+        	// ignore
+        }
         jt.execute(SQL_CREATE_TABLE);
         jt.update(SQL_CREATE_ITEM, new Object[] { "thing" });
         List list = jt.queryForList(SQL_SELECT_ITEM, new Object[] { "thing" });

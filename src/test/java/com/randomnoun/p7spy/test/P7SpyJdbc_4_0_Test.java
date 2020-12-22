@@ -1,4 +1,4 @@
-package net.sf.p7spy.test;
+package com.randomnoun.p7spy.test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,26 +27,26 @@ import junit.framework.TestSuite;
 /**
  * Unit test for p7spy. Should test in 1.6 VMs.
  * 
- * This unit test will include all tests in {@link net.sf.p7spy.test.P7Spy14Test}.
+ * This unit test will include all tests in {@link com.randomnoun.p7spy.test.P7SpyJdbc_3_0_Test}.
  * 
  * @TODO increase coverage to include all SQL datatypes / JDBC methods
  * @TODO call the 14 tests.
  */
-public class P7Spy16Test 
+public class P7SpyJdbc_4_0_Test 
     extends TestCase
 {
 	
-	P7Spy14Test p7SpyTest14 = new P7Spy14Test("P7SpyTests for JDK14");
+	P7SpyJdbc_3_0_Test p7SpyTest30 = new P7SpyJdbc_3_0_Test("P7SpyTests for JDK14");
 
 	/** Logger instance for this class */
-	public static Logger logger = Logger.getLogger(P7Spy16Test.class);
+	public static Logger logger = Logger.getLogger(P7SpyJdbc_4_0_Test.class);
 	
     /**
      * Create the test case
      *
      * @param testName name of the test case
      */
-    public P7Spy16Test( String testName )
+    public P7SpyJdbc_4_0_Test( String testName )
     {
         super( testName );
     }
@@ -56,20 +56,22 @@ public class P7Spy16Test
      */
     public static Test suite()
     {
-        return new TestSuite( P7Spy16Test.class );
+        return new TestSuite( P7SpyJdbc_4_0_Test.class );
     }
 
     public void setUp() {
-    	p7SpyTest14.setUp();
+    	p7SpyTest30.setUp();
     }
     
     public void testPlainConnection14() throws ClassNotFoundException, SQLException {
-    	p7SpyTest14.testPlainConnection();
+    	p7SpyTest30.testPlainConnection();
     }
     
     public void testP7SpyConnection14() throws ClassNotFoundException, SQLException {
-    	p7SpyTest14.testP7SpyConnection();
+    	p7SpyTest30.testP7SpyConnection();
     }
+    
+    // @TODO add some 4.0-specific tests here
     
 }
 
