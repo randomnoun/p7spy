@@ -1,12 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
 	<groupId>net.sf.p7spy</groupId>
 	<artifactId>p7spy</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
+	
 	<name>common</name>
-	<!-- <version>0.1.0-SNAPSHOT-${bambooBuildNumber}</version> -->
-	<version>0.4-SNAPSHOT</version>
-	<url>http://p7spy.sourceforge.net</url>
+	<url>https://github.com/randomnoun/p7spy</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -179,42 +180,6 @@
 	        </plugin>
 			  
 		</plugins>
-		  
-		  
-		<!-- 		
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<configuration>
-					<tasks>
-						<property name="compile_classpath" refid="maven.compile.classpath" />
-						<property name="runtime_classpath" refid="maven.runtime.classpath" />
-						<property name="test_classpath" refid="maven.test.classpath" />
-						<property name="plugin_classpath" refid="maven.plugin.classpath" />
-						<property name="db.username" value="${db.username}" />
-
-						<ant antfile="${basedir}/build.xml" inheritRefs="true"
-							inheritAll="true">
-							<target name="all" />
-							<target name="javadoc" />
-							<target name="p7spyJar" />
-							<target name="distribution" />
-						</ant>
-					</tasks>
-				</configuration>
-				<executions>
-					<execution>
-						<id>ant-tasks</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		-->
 				
 	</build>
 	
