@@ -3,7 +3,7 @@
 
 **p7spy**  is a thing that logs JDBC statements and queries via log4j. 
 
-It's called p7spy because I was using p6spy back in the early 2000s and that didn't do something, although I can't remember what that something was any more. 
+It's called p7spy because I was using [p6spy](https://github.com/p6spy/p6spy) back in the early 2000s and that didn't do something, although I can't remember what that something was any more. 
 
 You can configure regular expressions that will cause full stacktraces to be logged whenever any SQL executes that matches that regex. That might be it.
 
