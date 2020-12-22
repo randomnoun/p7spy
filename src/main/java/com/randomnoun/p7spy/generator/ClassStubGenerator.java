@@ -8,6 +8,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Generates class wrapper stubs. Is currently rolled back to compile
@@ -253,13 +256,14 @@ public class ClassStubGenerator {
         
         out.println();
         out.println("    // Methods");
+        Set<String> signatures = new HashSet<>();
         for (int i = 0; i < methods.length; i++) {
             method = methods[i];
-            out.print(getMethodStub(stubClassName, method));
+            out.print(getMethodStub(stubClassName, method, signatures));
         }
         
         // implement all methods defined in the inheritance graph
-        out.print(getMethodStubsForInterfaces(stubClassName, aclass.getInterfaces()));
+        out.print(getMethodStubsForInterfaces(stubClassName, aclass.getInterfaces(), signatures));
 
         out.println("}");
         out.flush();
@@ -273,7 +277,7 @@ public class ClassStubGenerator {
      * @param stubClassName the fully-qualified name of the class which will contain the stub methods
      * @param interfaces an array of interfaces that this class has to implement
      */
-    private String getMethodStubsForInterfaces(String stubClassName, Class interfaces[]) {
+    private String getMethodStubsForInterfaces(String stubClassName, Class interfaces[], Set<String> signatures) {
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter out = new PrintWriter(baos);
     	Method[] methods;
@@ -283,10 +287,14 @@ public class ClassStubGenerator {
         	methods = interfaces[i].getDeclaredMethods();
             for (int j = 0; j < methods.length; j++) {
                 method = methods[j];
-                out.println("    // from interface " + interfaces[i].getName());
-                out.print(getMethodStub(stubClassName, method));
+                String signature = getSignature(method);
+                if (!signatures.contains(signature)) {
+	                out.println("    // from interface " + interfaces[i].getName());
+	                out.print(getMethodStub(stubClassName, method, signatures));
+	                signatures.add(signature);
+                }
             }
-            out.print(getMethodStubsForInterfaces(stubClassName, interfaces[i].getInterfaces()));
+            out.print(getMethodStubsForInterfaces(stubClassName, interfaces[i].getInterfaces(), signatures));
         }
         out.flush();
     	return baos.toString();
@@ -373,7 +381,7 @@ public class ClassStubGenerator {
      * 
      * @return a stubbed version of a JDBC Method, as java source
      */
-    private String getMethodStub(String stubClassName, Method method) {
+    private String getMethodStub(String stubClassName, Method method, Set<String> signatures) {
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter out = new PrintWriter(baos);
     	// Type[] params;
@@ -382,8 +390,7 @@ public class ClassStubGenerator {
     	
         int modifierMask = ~(Modifier.ABSTRACT | Modifier.INTERFACE);
         
-        // @TODO ONLY ENABLE THIS 1.5+ JVMS. probably via reflection. arg.
-        
+        // only 1.5+ JVMs have generics
         Class returnTypeClass = null;
         try {
         	returnTypeClass = (Class) invokeMethod(method, "getGenericReturnType");
@@ -392,7 +399,6 @@ public class ClassStubGenerator {
         }
         
         String returnType = shortClassName(cleanType(returnTypeClass));
-
         
         // ignore checking for all return types for the time being
         String wrappedReturnType = null;
@@ -402,149 +408,164 @@ public class ClassStubGenerator {
         	}
         }
         
-        out.print("    " + Modifier.toString(method.getModifiers() & modifierMask) + " " + returnType + " " + method.getName() + "(");
-        try {
-        	params = (Class[]) invokeMethod(method, "getGenericParameterTypes");
-        } catch (IllegalArgumentException iae) {
-        	params = method.getParameterTypes();
-        }
+        String signature = getSignature(method);
+        if (!signatures.contains(signature)) {
+        	signatures.add(signature);
         
-        // params = method.getGenericParameterTypes();
-        params = method.getParameterTypes();
-        for (int j = 0; j < params.length; j++) {
-        	out.print(shortClassName(cleanType(params[j])));
-        	out.print(" arg" + j);
-            if (j < params.length - 1) {
-                out.print(", ");
-            }
-        }
-
-        out.print(")");
-        exceptions = method.getExceptionTypes();
-        if (exceptions.length > 0) {
-            out.print(" throws ");
-            for (int j = 0; j < exceptions.length; j++) {
-                out.print(shortClassName(exceptions[j].getName()));
-                if (j < exceptions.length - 1) {
-                    out.print(", ");
-                }
-            }
-        }
-        out.println("  {");
-
-        
-        String logStatement = "        String logText = \"" + method.getName() + "(\"";
-        for (int j = 0; j < params.length; j++) {
-        	/*
-        	if (params[j].toString().equals("java.lang.String")) {
-        		logStatement += " + \"'\"";
-        	}
-        	logStatement += " + arg" + j;
-            if (params[j].toString().equals("java.lang.String")) {
-            	logStatement += " + \"'\"";
-        	}*/
-    		logStatement += " + " + resultFormatter + ".formatResult(" + autoBox(params[j], "arg" + j)  + ")";
-            if (j < params.length - 1) {
-            	logStatement += " + \", \"";
-            }
-        }
-        logStatement += " + \")\";";
-        logStatement = replaceString(logStatement, "\" + \"", "");
-        out.println(logStatement);
-        if (mdcDurationId!=null) {
-        	out.println("        long startTime = System.currentTimeMillis();");
-        }
-        
-        // dump exception if first arg is a string and matches what we're looking for
-        // boolean enableTrap = false;
-        if (enableTrap) {
-	        if (params.length > 0 && params[0].toString().equals("class java.lang.String")) {
-	        	// enableTrap = true;
-	        	// out.println("        Exception trap = (arg0 != null && arg0.matches(\".fn_is_account_av\") ? new RuntimeException(\"SQL trap triggered\") : null;");
-	        	// issues with logging a real exception if that comes along; will just perform 2 logs, and the attendant indeterminism that comes with it (could chain the exceptions I suppose)
-	        	out.println("        if (arg0 != null && " + resultFormatter + ".matchesArg(arg0)) { logger.debug(\"SQL trap triggered\", new RuntimeException(\"SQL trap triggered\")); }");
+	        out.print("    " + Modifier.toString(method.getModifiers() & modifierMask) + " " + returnType + " " + method.getName() + "(");
+	        try {
+	        	params = (Class[]) invokeMethod(method, "getGenericParameterTypes");
+	        } catch (IllegalArgumentException iae) {
+	        	params = method.getParameterTypes();
 	        }
-        }
-        
-        boolean hasReturnValue = !returnType.equals("void");
-        if (hasReturnValue) {
-        	// @TODO if not primitive, should set to null
-        	out.print("        ");	
-        	out.println(shortClassName(cleanType(returnTypeClass)) + " result;");
-        }
-        out.println("        try {");
-        out.print("            ");
-        if (hasReturnValue) {
-        	out.print("result = ");
-        }
-        out.print("w." + method.getName() + "(");
-        for (int j = 0; j < params.length; j++) {
-            out.print("arg" + j);
-            if (j < params.length - 1) {
-                out.print(", ");
-            }
-        }
-        out.println(");");
-        if (wrappedReturnType!=null) {
-        	out.println("        if (!(result instanceof " + wrappedReturnType + ")) {");
-        	out.println("            result = new " + wrappedReturnType + "(result);");
-        	out.println("        }");
-        }
-        out.print("        }");
-        
-        // catch all declared exceptions, log, and rethrow
-        for (int j = 0; j < exceptions.length; j++) {
-            out.println(" catch (" + shortClassName(exceptions[j].getName()) + " e" + j + ") {");
-            if (mdcDurationId!=null) {
-            	out.println("            _setMDC(System.currentTimeMillis() - startTime);");
-            }
-            if (mdcObjectId!=null) {
-            	out.println("            _setMDC();");
-            }
-            out.println("            logger.debug(logText, e" + j + ");");
-            out.println("            throw e" + j + ";");
-            out.print("        }");
-        }
-        out.println(" catch (RuntimeException re) {");
-        // @TODO should combine these
-        if (mdcDurationId!=null) {
-        	out.println("            _setMDC(System.currentTimeMillis() - startTime);");
-        }
-        if (mdcObjectId!=null) {
-        	out.println("            _setMDC();");
-        }
-        out.println("            logger.debug(logText, re);");
-        out.println("            throw re;");
-        out.println("        }");
-        
-        if (mdcDurationId!=null) {
-        	out.println("        _setMDC(System.currentTimeMillis() - startTime);");
-        }
-        if (mdcObjectId != null) {
-    		out.println("        _setMDC();");
-    	}
-        		
-        // if (!method.getGenericReturnType().toString().equals("void")) {
-        if (!method.getReturnType().toString().equals("void")) {
-        	if (resultFormatter == null) {
-        		out.println("        logger.debug(logText + \": \" + result);");
-        	} else {
-    			out.println("        logger.debug(logText + \": \" + " + resultFormatter + ".formatResult(" + autoBox(method.getReturnType(), "result") + "));");
-        	}
-        	
-        	out.println("        return result;");
+	        
+	        // params = method.getGenericParameterTypes();
+	        params = method.getParameterTypes();
+	        for (int j = 0; j < params.length; j++) {
+	        	out.print(shortClassName(cleanType(params[j])));
+	        	out.print(" arg" + j);
+	            if (j < params.length - 1) {
+	                out.print(", ");
+	            }
+	        }
+	
+	        out.print(")");
+	        exceptions = method.getExceptionTypes();
+	        if (exceptions.length > 0) {
+	            out.print(" throws ");
+	            for (int j = 0; j < exceptions.length; j++) {
+	                out.print(shortClassName(exceptions[j].getName()));
+	                if (j < exceptions.length - 1) {
+	                    out.print(", ");
+	                }
+	            }
+	        }
+	        out.println("  {");
+	
+	        
+	        String logStatement = "        String logText = \"" + method.getName() + "(\"";
+	        for (int j = 0; j < params.length; j++) {
+	        	/*
+	        	if (params[j].toString().equals("java.lang.String")) {
+	        		logStatement += " + \"'\"";
+	        	}
+	        	logStatement += " + arg" + j;
+	            if (params[j].toString().equals("java.lang.String")) {
+	            	logStatement += " + \"'\"";
+	        	}*/
+	    		logStatement += " + " + resultFormatter + ".formatResult(" + autoBox(params[j], "arg" + j)  + ")";
+	            if (j < params.length - 1) {
+	            	logStatement += " + \", \"";
+	            }
+	        }
+	        logStatement += " + \")\";";
+	        logStatement = replaceString(logStatement, "\" + \"", "");
+	        out.println(logStatement);
+	        if (mdcDurationId!=null) {
+	        	out.println("        long startTime = System.currentTimeMillis();");
+	        }
+	        
+	        // dump exception if first arg is a string and matches what we're looking for
+	        // boolean enableTrap = false;
+	        if (enableTrap) {
+		        if (params.length > 0 && params[0].toString().equals("class java.lang.String")) {
+		        	// enableTrap = true;
+		        	// out.println("        Exception trap = (arg0 != null && arg0.matches(\".fn_is_account_av\") ? new RuntimeException(\"SQL trap triggered\") : null;");
+		        	// issues with logging a real exception if that comes along; will just perform 2 logs, and the attendant indeterminism that comes with it (could chain the exceptions I suppose)
+		        	out.println("        if (arg0 != null && " + resultFormatter + ".matchesArg(arg0)) { logger.debug(\"SQL trap triggered\", new RuntimeException(\"SQL trap triggered\")); }");
+		        }
+	        }
+	        
+	        boolean hasReturnValue = !returnType.equals("void");
+	        if (hasReturnValue) {
+	        	// @TODO if not primitive, should set to null
+	        	out.print("        ");	
+	        	out.println(shortClassName(cleanType(returnTypeClass)) + " result;");
+	        }
+	        out.println("        try {");
+	        out.print("            ");
+	        if (hasReturnValue) {
+	        	out.print("result = ");
+	        }
+	        out.print("w." + method.getName() + "(");
+	        for (int j = 0; j < params.length; j++) {
+	            out.print("arg" + j);
+	            if (j < params.length - 1) {
+	                out.print(", ");
+	            }
+	        }
+	        out.println(");");
+	        if (wrappedReturnType!=null) {
+	        	out.println("        if (!(result instanceof " + wrappedReturnType + ")) {");
+	        	out.println("            result = new " + wrappedReturnType + "(result);");
+	        	out.println("        }");
+	        }
+	        out.print("        }");
+	        
+	        // catch all declared exceptions, log, and rethrow
+	        for (int j = 0; j < exceptions.length; j++) {
+	            out.println(" catch (" + shortClassName(exceptions[j].getName()) + " e" + j + ") {");
+	            if (mdcDurationId!=null) {
+	            	out.println("            _setMDC(System.currentTimeMillis() - startTime);");
+	            }
+	            if (mdcObjectId!=null) {
+	            	out.println("            _setMDC();");
+	            }
+	            out.println("            logger.debug(logText, e" + j + ");");
+	            out.println("            throw e" + j + ";");
+	            out.print("        }");
+	        }
+	        out.println(" catch (RuntimeException re) {");
+	        // @TODO should combine these
+	        if (mdcDurationId!=null) {
+	        	out.println("            _setMDC(System.currentTimeMillis() - startTime);");
+	        }
+	        if (mdcObjectId!=null) {
+	        	out.println("            _setMDC();");
+	        }
+	        out.println("            logger.debug(logText, re);");
+	        out.println("            throw re;");
+	        out.println("        }");
+	        
+	        if (mdcDurationId!=null) {
+	        	out.println("        _setMDC(System.currentTimeMillis() - startTime);");
+	        }
+	        if (mdcObjectId != null) {
+	    		out.println("        _setMDC();");
+	    	}
+	        		
+	        // if (!method.getGenericReturnType().toString().equals("void")) {
+	        if (!method.getReturnType().toString().equals("void")) {
+	        	if (resultFormatter == null) {
+	        		out.println("        logger.debug(logText + \": \" + result);");
+	        	} else {
+	    			out.println("        logger.debug(logText + \": \" + " + resultFormatter + ".formatResult(" + autoBox(method.getReturnType(), "result") + "));");
+	        	}
+	        	
+	        	out.println("        return result;");
+	        } else {
+	        	out.println("        logger.debug(logText);");
+	        }
+	        out.println("    }");
+	        out.println();
+	    	out.flush();
+	    	return baos.toString();
         } else {
-        	out.println("        logger.debug(logText);");
+        	return "";
         }
-        out.println("    }");
-        out.println();
-    	out.flush();
-    	return baos.toString();
     }
     
     
     
-    /** Trims the "java.lang." package name from a classname if it is present (so "java.lang.Integer"
+    private String getSignature(Method method) {
+    	String signature = method.getName() + ";";
+        for (Parameter p : method.getParameters()) {
+        	signature += p.getType().getName() + ";";
+        }
+        return signature;
+	}
+
+	/** Trims the "java.lang." package name from a classname if it is present (so "java.lang.Integer"
      * will be returned as "Integer").
      * 
      * @param className classname to return short version of
@@ -552,7 +573,7 @@ public class ClassStubGenerator {
      * @return the short version of the class name
      */
     public static String shortClassName(String className) {
-    	if (className.startsWith("[")) {
+    	if (className.startsWith("[") || className.length() == 1) {
     		className = getTypeNameString(className);
     	}
     	if (className.startsWith("java.lang.") && className.indexOf(".", 10)==-1) {
@@ -582,7 +603,7 @@ public class ClassStubGenerator {
 		else if (typeName.equals("C")) { javaType = "char"; }
 		else if (typeName.equals("S")) { javaType = "short"; }
 		else if (typeName.equals("I")) { javaType = "int"; }
-		else if (typeName.equals("F")) { javaType = "long"; }
+		else if (typeName.equals("J")) { javaType = "long"; }
 		else if (typeName.equals("D")) { javaType = "float"; }
 		else if (typeName.equals("B")) { javaType = "double"; }
 		else if (typeName.startsWith("L")) {
@@ -607,7 +628,7 @@ public class ClassStubGenerator {
     
     public static void main (String args[]) throws Exception {
     	int argIndex = 0;
-    	String targetPackage = "net.sf.p7spy.impl";
+    	String targetPackage = "com.randomnoun.p7spy.impl";
 
     	if (args.length < 1) {
 			System.out.println(usage());
@@ -649,7 +670,7 @@ public class ClassStubGenerator {
     	ClassStubGenerator csg = new ClassStubGenerator();
     	csg.wrappedClasses = sourceClasses;
     	csg.stubClassNames = targetClasses;
-    	csg.resultFormatter = "net.sf.p7spy.P7SpyTrace";
+    	csg.resultFormatter = "com.randomnoun.p7spy.P7SpyTrace";
     	csg.mdcObjectId = "p7Id";
     	csg.mdcDurationId = "p7Duration";
     	csg.enableTrap = true;
