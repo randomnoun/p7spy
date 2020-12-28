@@ -37,6 +37,16 @@ If you're using an ancient JDBC driver and also need to specify the class name o
 jdbc:p7spy#oracle.jdbc.driver.OracleDriver:oracle:thin:@localhost:1521:TEST
 ```
 
+## How do I do that SQL regex matching ?
+
+Let's say you want to find the location in your code where something unexpected is happening in your database. Create a `p7spy-config.properties` file on the filesystem, and add a single name/value pair with the name 'matchText'; e.g.
+
+```
+matchText = FROM\s+SOMETABLE
+```
+When p7spy logs each statement, it will check each String argument to see whether it matches the regex in that property, and if so, will dump a stacktrace to the log, which will hopefully give you some idea what the hell's going on. 
+
+
 ## Maven 
 If you're using maven, then add the following dependency to your pom.xml:
 ```
@@ -109,4 +119,3 @@ Version 2.0.0 currently requires JDK 11 and have a driver class name of `com.ran
 ## Licensing
 
 p7spy is licensed under the BSD 2-clause license.
-
