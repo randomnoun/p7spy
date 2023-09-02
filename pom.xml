@@ -74,15 +74,6 @@
 			<comments>Simplified BSD License (BSD 2-clause license).</comments>
 		</license>
 	</licenses>
-	<mailingLists>
-		<mailingList>
-			<name>common-public Mailing List</name>
-			<subscribe>common-public-subscribe@lists.randomnoun.com</subscribe>
-			<unsubscribe>common-public-unsubscribe@lists.randomnoun.com</unsubscribe>
-			<post>common-public@lists.randomnoun.com</post>
-			<archive>http://lists.randomnoun.com/pipermail/common-public/</archive>
-		</mailingList>
-	</mailingLists>
 	<organization>
 		<name>randomnoun</name>
 		<url>http://www.randomnoun.com</url>
@@ -186,6 +177,25 @@
 						<linksource>true</linksource>
 					</configuration>
 				</plugin>
+				
+				<plugin>
+                    <groupId>com.ragedunicorn.tools.maven</groupId>
+                    <artifactId>github-release-maven-plugin</artifactId>
+                    <version>1.0.6</version>
+                    <executions>
+                      <execution>
+                        <id>default-cli</id>
+                        <configuration>
+                          <owner>randomnoun</owner>
+                          <repository>${project.artifactId}</repository>
+                          <server>github-release-token</server>
+                          <tagName>v${project.version}</tagName>
+                          <name>v${project.version}</name>
+                          <releaseNotes>src/site/release-notes.md</releaseNotes>
+                        </configuration>
+                      </execution>
+                    </executions>
+                </plugin>    
 				
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
