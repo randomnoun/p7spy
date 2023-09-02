@@ -13,12 +13,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Generates class wrapper stubs. Is currently rolled back to compile
- * in Java1.4 (no generics or autoboxing support); need to do some kind
- * of reflectiony magic at some point.
+ * Generates class wrapper stubs. Is currently rolled back to compile in Java1.4.
  * 
- * <p>I'm intentionally creating java source rather than using a cglib or other AOP proxy wrapper,
+ * <p>I'm intentionally creating java source rather than using a cglib or another AOP proxy wrapper,
  * because I'd rather debug a class whose source I have available than a generated class.
+ *
+ * <p>You could probably all do this in eclipse by right-clicking on the class name and selecting 'delegate class'
+ * these days.
  *
  * @author knoxg
  * @version $Id$
