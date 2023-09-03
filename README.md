@@ -1,4 +1,6 @@
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.randomnoun.p7spy/p7spy.svg)](https://search.maven.org/artifact/com.randomnoun.p7spy/p7spy)
+
 # p7spy
 
 **p7spy**  is a thing that logs JDBC statements and queries via log4j. 
